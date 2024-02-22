@@ -1,0 +1,64 @@
+﻿@page "/confirmation"
+
+@using WebShop.Common;
+
+@rendermode InteractiveServer
+@inject WebShopHandler wsh
+@inject NavigationManager navigationManager
+
+<PageTitle>Confirmation</PageTitle>
+<WebshopHeader ShoppingListLength="wsh._db.ShoppingList.Count"></WebshopHeader>
+
+@if (purchaseConfirmed)
+{
+    <h2>Thank you for purchasing!</h2>
+}
+else
+{
+    @foreach (var item in wsh._db.ShoppingList)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Picture</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price/item</th>
+                    <th>Price</th>
+                    <th>Price*quantity</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>@item.Id</td>
+                    <td><img src="@item.Url" width="180px" /></td>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@item.Price</td>
+                    <td>@item.Quantity</td>
+                    <td>@(item.Price * item.Quantity)</td>
+
+                </tr>
+            </tbody>
+        </table>
+    }
+    <form class="form-control">
+        <input class="form-control col-auto" type="text" placeholder="Name" @bind="wsh.Customer.Username" disabled width="180px" />
+        <input class="form-control col-auto" type="text" placeholder="Adress" @bind="wsh.Customer.Password" disabled width="180px" />
+        <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
+    </form>
+}
+
+@code {
+    public bool purchaseConfirmed = false;
+
+    public async Task ConfirmPurchase()
+    {
+        purchaseConfirmed = true;
+        wsh._db.ShoppingList.Clear();
+        await Task.Delay(600);
+        navigationManager.NavigateTo("/");
+    }
+}

@@ -1,0 +1,66 @@
+﻿@*Display product at home page*@
+@using WebShop.Common.Classes
+@using WebShop.Components.UIComponents
+
+
+@if (Product.Quantity > 0 && Product.IsOnSale == false)
+{
+    <div class="card m-2" style="width: 15rem">
+        <a href="product/@Product.Id">
+            <img src=@Product.Url class="card-img-top" alt="@Product.Name">
+        </a>
+        <div class="card-body">
+            <h5 class="card-title">@Product.Name</h5>
+            <p class="card-text"><i>@Product.Description.Substring(0, 20) ...</i></p>
+            <div>
+                <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton> @Product.Price [Unit]
+            </div>
+        </div>
+    </div>
+}
+else if (Product.Quantity>0 && Product.IsOnSale == true)
+{
+    <div  class="card m-2" style="width: 15rem">
+        <a href="product/@Product.Id">
+            <img src=@Product.Url class="card-img-top border-danger" alt="@Product.Name">
+        </a>
+        <div class="card-body">
+            <h5 class="card-title">@Product.Name</h5>
+            <p class="card-text"><i>@Product.Description.Substring(0, 20) ...</i></p>
+            <div>
+                <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton> @Product.Price [Unit]
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    <div   class="card m-2 opacity-50" style="width: 15rem">
+        <a href="product/@Product.Id">
+            <img src=@Product.Url class="card-img-top" alt="@Product.Name">
+        </a>
+        <div class="card-body">
+            <h5 class="card-title">@Product.Name</h5>
+            <p class="card-text"><i>@Product.Description.Substring(0, 20) ...</i></p>
+            <div>
+                <AddToCartButton></AddToCartButton> Sould out
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Product Product { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnAddToCart { get; set; }
+
+    public async Task AddToCart()
+    {
+        await OnAddToCart.InvokeAsync();
+    }
+}
+
+

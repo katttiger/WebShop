@@ -1,0 +1,62 @@
+﻿@page "/product"
+@page "/product/{id:int}"
+
+@rendermode InteractiveServer
+@inject WebShopHandler wsh
+@inject NavigationManager navigationManager
+
+<PageTitle>ProductInfo</PageTitle>
+<WebshopHeader ShoppingListLength="@wsh._db.ShoppingList.Count()"
+OnNavigationToCashier="GoToCheckout"></WebshopHeader>
+
+<div>
+    <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" <a href="/">Home</a></li>
+            <li class="breadcrumb-item active"> <a href="#">@product.Name</a></li>
+        </ol>
+    </nav>
+</div>
+
+<ProductInfoCard Product="product"
+                 OnAddToCart="()=>AddToCart(product.Id)"></ProductInfoCard>
+<WebshopFooter></WebshopFooter>
+
+@code {
+    public List<Product> products = new List<Product>();
+    bool error = false;
+    public string errorMessage = string.Empty;
+    public string NotFound { get; set; } = string.Empty;
+    Product product = new();
+
+    [Parameter]
+    public int Id { get; set; }
+
+    public void GoToCheckout()
+    {
+        if (wsh._db.ShoppingList.Count > 0)
+            navigationManager.NavigateTo("/checkout");
+        else
+        {
+            error = true;
+            errorMessage = "Shopping list is empty. Please add an object to the list.";
+        }
+    }
+
+    public void AddToCart(int id)
+    {
+        Product product = wsh._db.Products.Find(p => p.Id == id);
+        wsh.AddToShoppingList(product);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            products = wsh._db.GetList();
+            product = wsh._db.Products.Find(p => p.Id == Id);
+
+            StateHasChanged();
+        }
+    }
+}

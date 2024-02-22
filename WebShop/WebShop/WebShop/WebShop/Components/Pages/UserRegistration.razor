@@ -1,0 +1,33 @@
+﻿@page "/userregistration"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject WebShopHandler wsh
+
+
+<PageTitle>Log in</PageTitle>
+<WebshopHeader></WebshopHeader>
+
+@if (wsh.existingUser is true)
+{
+    <LogInForm OnGoToRegistration="ChangeRegistrationForm"></LogInForm>
+}
+else
+{
+    <UserRegistrationForm OnGoToLogIn="ChangeRegistrationForm"></UserRegistrationForm>
+}
+
+@*TODO: Fix registration and button for swapping between forms.
+        Connect to database
+        COnvert all work to work with a database.
+*@
+
+<WebshopFooter></WebshopFooter>
+@code {
+
+
+    public void ChangeRegistrationForm()
+    {
+        wsh.existingUser = !wsh.existingUser;
+    }
+
+}

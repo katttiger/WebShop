@@ -1,0 +1,12 @@
+﻿button {
+    margin: 5px;
+    flex: auto;
+}
+card > button {
+    background-color: orange;
+}
+
+card > #product-sold-out {
+    opacity: 0.5;
+}
+}
