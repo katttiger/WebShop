@@ -10,6 +10,7 @@ namespace WebShop.Data
         public int Id { get; set; }
 
         //En shoppingcart/användare
+        public int ShoppingCartId { get; set; }
         public ShoppingCart Shoppinglist { get; set; }
     }
 }

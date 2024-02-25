@@ -10,6 +10,7 @@ namespace WebShop.Data.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public double Price { get; set; }
+        public double Quantity { get; set; }
         public string Url { get; set; }
         public List<Product>? Shoppinglist { get; set; } = new();
         //En shoppingcartlista/användare

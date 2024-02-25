@@ -1,5 +1,6 @@
 ﻿@*Display product at home page*@
 @using WebShop.Common.Classes
+@using WebShop.Data.Models
 @using WebShop.Components.UIComponents
 
 
@@ -56,7 +57,7 @@ else
 
 @code {
     [Parameter]
-    public Product Product { get; set; } = new();
+    public Products Product { get; set; } = new();
 
     [Parameter]
     public EventCallback OnAddToCart { get; set; }

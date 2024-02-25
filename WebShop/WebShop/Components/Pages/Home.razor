@@ -1,6 +1,7 @@
 ﻿@using WebShop.Data
 @page "/"
 
+@using WebShop.Data.Models
 @rendermode InteractiveServer
 @inject WebShopHandler wsh
 @inject NavigationManager navigationManager
@@ -23,8 +24,12 @@
 }
 
 <div class="d-flex flex-wrap justify-content-start">
-    <ProductHomeCard></ProductHomeCard>
+    @foreach (var product in ProductsList)
+    {
+        <ProductHomeCard Product="@product"></ProductHomeCard>
+
     }
+
 </div>
 
 <WebshopFooter></WebshopFooter>
@@ -32,41 +37,28 @@
 
     string errorMessage = string.Empty;
     bool error = false;
+    public List<Products> ProductsList = new();
+
 
     //Navigation
-    public void ShowProductSide(int id)
-    {
+    public void ShowProductSide(int id) =>
         navigationManager.NavigateTo("/product/" + id);
-    }
 
-    public void GoToCheckout()
-    {
-        /* (wsh._db.ShoppingList.Count > 0) */
-        navigationManager.NavigateTo("/checkout");
-
-        error = true;
-        errorMessage = "Shopping list is empty. Please add an object to the list.";
-
-    }
-
-    public async void ShowProducts()
-    {
-        wsh.Seed();
-    }
+    public void GoToCheckout() => navigationManager.NavigateTo("/checkout");
 
     //Bind AddToCartButton to method:
     public void AddToCart(int id) => wsh.AddToShoppingList(id);
 
     protected override async Task OnInitializedAsync()
     {
-        await wsh.GetAllProductsAsync();
+        //await wsh.Seed();
+        ProductsList = wsh.GetAllProducts();        
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            wsh.GetAllProductsAsync();
             StateHasChanged();
         }
     }
