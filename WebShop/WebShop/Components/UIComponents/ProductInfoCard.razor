@@ -2,7 +2,7 @@
 
 @using WebShop.Common.Classes
 
-@if (Product.Quantity > 0)
+@if (Product.Quantity > 0 && Product.IsOnSale == false)
 {
 
     @*TODO:
@@ -23,6 +23,26 @@
         </div>
     </div>
 }
+
+else if (Product.Quantity > 0 && Product.IsOnSale == true)
+{
+    <div class="card d-flex" style="max-width:540px; max-height:auto;">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <img src="@Product.Url" class="img-fluid rounded-start" alt="@Product.Name, @Product.Description">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">@Product.Name <span class="text-danger">SALE!</span></h5>
+                    <p class="card-text">@Product.Description</p>
+                    <p class="card-text text-body-secondary">In store: @Product.Quantity</p>
+                    <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton> <span class="text-danger">@Product.Price SEK</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 else
 {
     @*TODO:

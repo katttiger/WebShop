@@ -1,12 +1,13 @@
 ﻿@page "/checkout"
 @using WebShop.Common;
+@using WebShop.Data;
 
 @rendermode InteractiveServer
 @inject WebShopHandler wsh
 @inject NavigationManager navigationManager
 
 <PageTitle>Checkout</PageTitle>
-<WebshopHeader ShoppingListLength="@wsh._db.ShoppingList.Count"></WebshopHeader>
+<WebshopHeader @* ShoppingListLength="@wsh._db.ShoppingList.Count"> *@></WebshopHeader>
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -14,7 +15,7 @@
         </ol>
     </nav>
 </div>
-
+@* 
 @foreach (var item in wsh._db.ShoppingList)
 {
     <table class="table">
@@ -24,26 +25,24 @@
                 <th>Picture</th>
                 <th>Name</th>
                 <th>Description</th>
-                <th>Price/item</th>
                 <th>Price</th>
-                <th>Price*quantity</th>
             </tr>
         </thead>
 
         <tbody>
+            @*If( item is represented more than once in shoppinglist) create only one post
             <tr>
                 <td>@item.Id</td>
                 <td><img src="@item.Url" width="180px" /></td>
                 <td>@item.Name</td>
                 <td>@item.Description</td>
-                <td>@item.Price</td>
                 <td>@item.Quantity</td>
-                <td>@(item.Price * item.Quantity)</td>
+                <td>@item.Price</td>
             </tr>
         </tbody>
     </table>
 }
-
+ *@
 
 <form class="form-control">
     @*TODO: If user exist, print adress and name automatically*@
@@ -51,7 +50,7 @@
     <input type="text" class="form-control" required @bind="wsh.Customer.Username" />
 
     <label class="form-label">Adress</label>
-    <input type="text" required @bind="wsh.Customer.Password" />
+    <input type="text" class="form-control" required @bind="wsh.Customer.Password" />
 
     <input type="checkbox" class="form-check" required" /> Agree to terms and privacy policy
 </form>
@@ -63,7 +62,7 @@
 
     public void NavigateToConfirmation()
     {
-        wsh.AddCustomer(wsh.Customer.Username, wsh.Customer.Password);
+     //   wsh.AddCustomer(wsh.Customer.Username, wsh.Customer.Password);
         if (wsh.Customer.Username is not null && wsh.Customer.Password is not null && wsh.error == false)
             navigationManager.NavigateTo("/confirmation");
 

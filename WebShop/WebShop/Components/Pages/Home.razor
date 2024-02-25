@@ -1,14 +1,14 @@
-﻿@page "/"
+﻿@using WebShop.Data
+@page "/"
+
 @rendermode InteractiveServer
 @inject WebShopHandler wsh
 @inject NavigationManager navigationManager
 
-
 <PageTitle>Home</PageTitle>
+<WebshopHeader OnNavigationToCashier="GoToCheckout"
+               OnProductsToDb="wsh.Seed"></WebshopHeader>
 @*Connect the buttons in the webshopheader to a navigationmethod that guides to the checkout.*@
-<WebshopHeader ShoppingListLength="@wsh._db.ShoppingList.Count"
-               OnNavigationToCashier="GoToCheckout"
-OnNavigationToLogin="GoToLogin"></WebshopHeader>
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -29,14 +29,13 @@ OnNavigationToLogin="GoToLogin"></WebshopHeader>
 }
 
 <div class="d-flex flex-wrap justify-content-start">
-    @foreach (var product in Products)
+    @foreach (var product in )
     {
         <div>
             <ProductHomeCard Product="@product"
                              OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
         </div>
-    }@*
-    <AddToCartButton @onclick="()=>AddToCart()"></AddToCartButton> *@
+    }
 </div>
 
 <WebshopFooter></WebshopFooter>
@@ -53,32 +52,29 @@ OnNavigationToLogin="GoToLogin"></WebshopHeader>
 
     public void GoToCheckout()
     {
-        if (wsh._db.ShoppingList.Count > 0)
-            navigationManager.NavigateTo("/checkout");
-        else
-        {
-            error = true;
-            errorMessage = "Shopping list is empty. Please add an object to the list.";
-        }
-    }
+        /* (wsh._db.ShoppingList.Count > 0) */
+        navigationManager.NavigateTo("/checkout");
 
-    public void GoToLogin()
-    {
-        navigationManager.NavigateTo("/userregistration");    
+        error = true;
+        errorMessage = "Shopping list is empty. Please add an object to the list.";
+
     }
 
     //Bind AddToCartButton to method:
-    public void AddToCart(int id)
+    public void AddToCart(int id) => wsh.AddToShoppingList(id);
+    protected override async Task OnInitializedAsync()
     {
-        Product product = Products.Find(p => p.Id == id);
-        wsh.AddToShoppingList(product);
+        wsh.Seed();
+
     }
+
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            Products = wsh._db.GetList();
+            wsh.Seed();
+            //  Products = wsh._db.GetList();
             StateHasChanged();
         }
     }

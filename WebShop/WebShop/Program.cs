@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebShop.Client.Pages;
-using WebShop.Common.Classes;
 using WebShop.Components;
 using WebShop.Components.Account;
 using WebShop.Data;

@@ -1,21 +1,21 @@
 ﻿@page "/confirmation"
 
 @using WebShop.Common;
+ @using WebShop.Data;
 
 @rendermode InteractiveServer
 @inject WebShopHandler wsh
 @inject NavigationManager navigationManager
 
-<PageTitle>Confirmation</PageTitle>
-<WebshopHeader ShoppingListLength="wsh._db.ShoppingList.Count"></WebshopHeader>
-
+<h3>Confirmation</h3>
+<WebshopHeader>@*  ShoppingListLength="wsh._db.ShoppingList.Count"> *@</WebshopHeader>
 @if (purchaseConfirmed)
 {
     <h2>Thank you for purchasing!</h2>
 }
 else
 {
-    @foreach (var item in wsh._db.ShoppingList)
+   @*  @foreach (var item in @* wsh._db.ShoppingList)
     {
         <table class="table">
             <thead>
@@ -42,13 +42,14 @@ else
 
                 </tr>
             </tbody>
-        </table>
+        </table> *@
     }
     <form class="form-control">
-        <input class="form-control col-auto" type="text" placeholder="Name" @bind="wsh.Customer.Username" disabled width="180px" />
-        <input class="form-control col-auto" type="text" placeholder="Adress" @bind="wsh.Customer.Password" disabled width="180px" />
-        <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
+        <input class="form-control" type="text" placeholder="Name" @bind="wsh.Customer.Username" disabled />
+        <input class="form-control" type="text" placeholder="Adress" @bind="wsh.Customer.Password" disabled />
     </form>
+    <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
+
 }
 
 @code {
@@ -57,7 +58,7 @@ else
     public async Task ConfirmPurchase()
     {
         purchaseConfirmed = true;
-        wsh._db.ShoppingList.Clear();
+       //wsh._db.ShoppingList.Clear();
         await Task.Delay(600);
         navigationManager.NavigateTo("/");
     }
