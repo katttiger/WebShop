@@ -6,8 +6,7 @@
 @inject NavigationManager navigationManager
 
 <PageTitle>Home</PageTitle>
-<WebshopHeader OnNavigationToCashier="GoToCheckout"
-               OnProductsToDb="wsh.Seed"></WebshopHeader>
+<WebshopHeader OnNavigationToCashier="GoToCheckout"></WebshopHeader>
 @*Connect the buttons in the webshopheader to a navigationmethod that guides to the checkout.*@
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
@@ -23,24 +22,14 @@
     </div>
 }
 
-@if (Products is null)
-{
-    <p>Loading...</p>
-}
-
 <div class="d-flex flex-wrap justify-content-start">
-    @foreach (var product in )
-    {
-        <div>
-            <ProductHomeCard Product="@product"
-                             OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
-        </div>
+    <ProductHomeCard></ProductHomeCard>
     }
 </div>
 
 <WebshopFooter></WebshopFooter>
 @code {
-    public List<Product> Products { get; set; } = new List<Product>();
+
     string errorMessage = string.Empty;
     bool error = false;
 
@@ -60,21 +49,24 @@
 
     }
 
-    //Bind AddToCartButton to method:
-    public void AddToCart(int id) => wsh.AddToShoppingList(id);
-    protected override async Task OnInitializedAsync()
+    public async void ShowProducts()
     {
         wsh.Seed();
-
     }
 
+    //Bind AddToCartButton to method:
+    public void AddToCart(int id) => wsh.AddToShoppingList(id);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await wsh.GetAllProductsAsync();
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            wsh.Seed();
-            //  Products = wsh._db.GetList();
+            wsh.GetAllProductsAsync();
             StateHasChanged();
         }
     }
