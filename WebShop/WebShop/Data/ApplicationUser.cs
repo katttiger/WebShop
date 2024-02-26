@@ -7,11 +7,6 @@ namespace WebShop.Data
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class ApplicationUser : IdentityUser
     {
-        public int Id { get; set; }
-       // public List<ShoppingCart> ShoppingCart { get; set; }
-
-        //En shoppingcart/användare
-        public int ShoppingCartId { get; set; }
-        public ShoppingCart Shoppinglist { get; set; }
+        public ShoppingCart ShoppingCart { get; set; }
     }
 }

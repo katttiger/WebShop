@@ -6,8 +6,8 @@ namespace WebShop.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-        //NOTE: Update shoppingcarts
-        //REUIRED: Customer-relation, registration of all products etc.
+        /*
+         'The dependent side could not be determined for the one-to-one relationship between 'ShoppingCart.User' and 'ApplicationUser.ShoppingCart'*/
         public DbSet<Products> Products { get; set; }
         public DbSet<ShoppingCart> ShoppingCarts { get; set;}
     }

@@ -8,14 +8,15 @@ namespace WebShop.Data
     public class WebShopHandler
     {
         public Products Products = new();
-
-        public Customer Customer = new();
-        public ShoppingCart ShoppingCart = new();
+        public List<Products> ShoppingCart = new();
+        public List<Products> ProductList = new();
 
         public bool error = false;
         public string errorMessage = string.Empty;
 
-        public List<ShoppingCart> ShoppingCarts = new List<ShoppingCart>();
+
+        //Have a list with shoppinglist.
+        //Store that list in local storage? or database (not possible)       
         public NavigationManager navigationManager { get; set; }
 
         private readonly ApplicationDbContext _context;
@@ -23,6 +24,29 @@ namespace WebShop.Data
         public WebShopHandler(ApplicationDbContext context) => _context = context;
 
 
+
+        //Fetch products
+        public List<Products> GetAllProducts() => _context.Products.ToList();
+        public void GetProductsById(int id)
+        {
+            foreach (var product in _context.Products)
+            {
+                if (product.Id == id)
+                {
+                    Products = product;
+                }
+            }
+        }
+        //Add to cart
+        public void AddToCart(int id)
+        {
+            GetProductsById(id);
+            ShoppingCart.Add(Products);
+            Products.Quantity--;
+            //_context.Products.Update(Products);
+        }
+
+        //User related methods
         public async Task Seed()
         {
             _context.Add(new Products
@@ -77,54 +101,15 @@ namespace WebShop.Data
             });
             await _context.SaveChangesAsync();
         }
-
-        //Fetch products
-        public List<Products> GetAllProducts() => _context.Products.ToList();
-        public void GetProductsById(int id)
-        {
-            foreach (var product in _context.Products)
-            {
-                if (product.Id == id)
-                {
-                    Products = product;
-                }
-            }
-        }
-
-        //Add to cart
-        public void AddToCart(int id)
-        {
-            GetProductsById(id);
-            ShoppingCarts.Add(new ShoppingCart
-            {
-                Name = Products.Name,
-                Description = Products.Description,
-                IsOnSale = Products.IsOnSale,
-                Price = Products.Price,
-                Quantity = 1,
-                Url = Products.Url,
-            });
-            Products.Quantity--;
-            // _context.Products.Update(Products);
-        }
-
-
-        //User related methods
         public async Task UpdateUser(ApplicationUser user)
         {
             _context.Update(user);
             _context.SaveChanges();
         }
-        public async Task<ApplicationUser> GetUserShopinglistInfo(ApplicationUser user) => _context.Users.Include(u => u.Shoppinglist).First(u => u.Id == user.Id);
+        public async Task<ApplicationUser> GetUserShopinglistInfo(ApplicationUser user) => _context.Users.Include(u => u.ShoppingCart).First(u => u.Id == user.Id);
     }
 }
 
-//if (product.Quantity > 0)
-//{
-//    _context.Add(product);
-//    await _context.SaveChangesAsync();
-//    }
-//=> _db.ShoppingList.Add(product);
 /*
  COLLECTIONDATA
  public class CollectionData

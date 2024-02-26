@@ -43,13 +43,13 @@ else
                 </tr>
             </tbody>
         </table> *@
-    }
+    }@* 
     <form class="form-control">
         <input class="form-control" type="text" placeholder="Name" @bind="wsh.Customer.Username" disabled />
         <input class="form-control" type="text" placeholder="Adress" @bind="wsh.Customer.Password" disabled />
     </form>
     <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
-
+ *@
 }
 
 @code {

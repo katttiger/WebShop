@@ -8,8 +8,8 @@
 @inject NavigationManager navigationManager
 
 <PageTitle>Home</PageTitle>
-<WebshopHeader ShoppingListLength="@wsh.ShoppingCarts.Count()"
-    OnNavigationToCashier="GoToCheckout"></WebshopHeader>
+<WebshopHeader ShoppingListLength="@wsh.ShoppingCart.Count()"
+               OnNavigationToCashier="GoToCheckout"></WebshopHeader>
 @*Connect the buttons in the webshopheader to a navigationmethod that guides to the checkout.*@
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
@@ -18,6 +18,7 @@
         </ol>
     </nav>
 </div>
+
 @if (error)
 {
     <div>
@@ -29,9 +30,8 @@
     @foreach (var product in ProductsList)
     {
         <ProductHomeCard Product="@product"
-        OnShowProductSide="()=>ShowProductSide(product.Id)" 
-        OnAddToCart="()=>AddToCart(product.Id)"
-        ></ProductHomeCard>
+                         OnShowProductSide="()=>ShowProductSide(product.Id)"
+                         OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
     }
 </div>
 
