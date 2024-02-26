@@ -3,11 +3,13 @@
 
 @using WebShop.Data.Models
 @rendermode InteractiveServer
+
 @inject WebShopHandler wsh
 @inject NavigationManager navigationManager
 
 <PageTitle>Home</PageTitle>
-<WebshopHeader OnNavigationToCashier="GoToCheckout"></WebshopHeader>
+<WebshopHeader ShoppingListLength="@wsh.ShoppingCarts.Count()"
+    OnNavigationToCashier="GoToCheckout"></WebshopHeader>
 @*Connect the buttons in the webshopheader to a navigationmethod that guides to the checkout.*@
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
@@ -26,10 +28,11 @@
 <div class="d-flex flex-wrap justify-content-start">
     @foreach (var product in ProductsList)
     {
-        <ProductHomeCard Product="@product"></ProductHomeCard>
-
+        <ProductHomeCard Product="@product"
+        OnShowProductSide="()=>ShowProductSide(product.Id)" 
+        OnAddToCart="()=>AddToCart(product.Id)"
+        ></ProductHomeCard>
     }
-
 </div>
 
 <WebshopFooter></WebshopFooter>
@@ -39,20 +42,27 @@
     bool error = false;
     public List<Products> ProductsList = new();
 
-
     //Navigation
-    public void ShowProductSide(int id) =>
+    public void ShowProductSide(int id)
+    {
+        wsh.GetProductsById(id);
         navigationManager.NavigateTo("/product/" + id);
+    }
 
     public void GoToCheckout() => navigationManager.NavigateTo("/checkout");
 
     //Bind AddToCartButton to method:
-    public void AddToCart(int id) => wsh.AddToShoppingList(id);
+    //public void AddToCart(int id) => wsh.AddToShoppingList(id);
+
+    public void AddToCart(int id)
+    {
+        wsh.AddToCart(id);
+    }
 
     protected override async Task OnInitializedAsync()
     {
         //await wsh.Seed();
-        ProductsList = wsh.GetAllProducts();        
+        ProductsList = wsh.GetAllProducts();
     }
 
     protected override void OnAfterRender(bool firstRender)

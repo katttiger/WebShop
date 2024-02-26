@@ -1,6 +1,6 @@
 ﻿@using WebShop.Data
 @page "/product"
-@page "/product/{id:int}"
+@page "/product/{Id:int}"
 
 @rendermode InteractiveServer
 @inject WebShopHandler wsh
@@ -8,52 +8,41 @@
 
 <PageTitle>ProductInfo</PageTitle>
 
+<WebshopHeader ShoppingListLength="@wsh.ShoppingCarts.Count()"
+               OnNavigationToCashier="GoToCheckout"></WebshopHeader>
+
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item" <a href="/">Home</a></li>
-            <li class="breadcrumb-item active"> <a href="#">@product.Name</a></li>
+            <li class="breadcrumb-item active"> <a href="#">@Product.Name</a></li>
         </ol>
     </nav>
 </div>
 
-<ProductInfoCard Product="product"
-                 OnAddToCart="()=>AddToCart(product.Id)"></ProductInfoCard>
+<ProductInfoCard Product="Product"
+                 OnAddToCart="()=>AddToCart(Product.Id)"></ProductInfoCard>
 <WebshopFooter></WebshopFooter>
 
 @code {
-    public List<Product> products = new List<Product>();
-    bool error = false;
-    public string errorMessage = string.Empty;
-    public string NotFound { get; set; } = string.Empty;
-    Product product = new();
-
     [Parameter]
     public int Id { get; set; }
 
-    public void GoToCheckout()
-     {
-    //     if (wsh._db.ShoppingList.Count > 0)
-    //         navigationManager.NavigateTo("/checkout");
-      
-            error = true;
-            errorMessage = "Shopping list is empty. Please add an object to the list.";
-        
-    }
+    bool error = false;
+    public string errorMessage = string.Empty;
+    public string NotFound { get; set; } = string.Empty;
+    public Products Product = new();
+
+    public void GoToCheckout() => navigationManager.NavigateTo("/checkout");
 
     public void AddToCart(int id)
     {
-       // Product product = wsh._db.Products.Find(p => p.Id == id);
-        if (product.Quantity > 0)
-        {
-            //wsh.AddToShoppingList(product);
-            product.Quantity--;
-        }
-        else
-        {
-            error = true;
-            errorMessage = "Product not available";
-        }
+        wsh.AddToCart(id);
+    }
+
+    protected override void OnInitialized()
+    {
+        Product = wsh.Products;
     }
 
     protected override void OnAfterRender(bool firstRender)

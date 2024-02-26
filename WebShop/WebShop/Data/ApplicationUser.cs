@@ -8,6 +8,7 @@ namespace WebShop.Data
     public class ApplicationUser : IdentityUser
     {
         public int Id { get; set; }
+       // public List<ShoppingCart> ShoppingCart { get; set; }
 
         //En shoppingcart/användare
         public int ShoppingCartId { get; set; }

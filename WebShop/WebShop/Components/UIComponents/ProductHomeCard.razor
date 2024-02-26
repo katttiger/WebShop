@@ -7,7 +7,7 @@
 @if (Product.Quantity > 0 && Product.IsOnSale == false)
 {
     <div class="card m-2" style="width: 15rem">
-        <a href="product/@Product.Id">
+        <a href="product/@Product.Id" @onclick="ShowProductSide">
             <img src=@Product.Url class="card-img-top" alt="@Product.Name">
         </a>
         <div class="card-body">
@@ -23,7 +23,7 @@
 else if (Product.Quantity > 0 && Product.IsOnSale == true)
 {
     <div class="card m-2" style="width: 15rem">
-        <a href="product/@Product.Id">
+        <a href="product/@Product.Id" @onclick="ShowProductSide">
             <img src=@Product.Url class="card-img-top border-danger" alt="@Product.Name">
         </a>
         <div class="card-body bg-warning bg-opacity-25">
@@ -41,7 +41,7 @@ else if (Product.Quantity > 0 && Product.IsOnSale == true)
 else
 {
     <div class="card m-2 opacity-50" style="width: 15rem">
-        <a href="product/@Product.Id">
+        <a href="product/@Product.Id" @onclick="ShowProductSide">
             <img src=@Product.Url class="card-img-top" alt="@Product.Name">
         </a>
         <div class="card-body">
@@ -60,11 +60,19 @@ else
     public Products Product { get; set; } = new();
 
     [Parameter]
+    public EventCallback OnShowProductSide { get; set; }
+
+    [Parameter]
     public EventCallback OnAddToCart { get; set; }
 
     public async Task AddToCart()
     {
         await OnAddToCart.InvokeAsync();
+    }
+
+    public async Task ShowProductSide()
+    {
+        await OnShowProductSide.InvokeAsync();
     }
 }
 

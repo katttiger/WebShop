@@ -1,13 +1,19 @@
 ﻿@page "/checkout"
 @using WebShop.Common;
 @using WebShop.Data;
+@using Microsoft.AspNetCore.Authorization;
 
-@rendermode InteractiveServer
-@inject WebShopHandler wsh
 @inject NavigationManager navigationManager
+@inject AuthenticationStateProvider StateProvider;
+@inject WebShopHandler wsh;
+@inject UserManager<ApplicationUser> userManager;
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
 
 <PageTitle>Checkout</PageTitle>
-<WebshopHeader @* ShoppingListLength="@wsh._db.ShoppingList.Count"> *@></WebshopHeader>
+<WebshopHeader ShoppingListLength="@wsh.ShoppingCarts.Count()"></WebshopHeader>
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -15,8 +21,8 @@
         </ol>
     </nav>
 </div>
-@* 
-@foreach (var item in wsh._db.ShoppingList)
+
+@foreach (var product in wsh.ShoppingCarts)
 {
     <table class="table">
         <thead>
@@ -25,24 +31,23 @@
                 <th>Picture</th>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Quantity</th>
                 <th>Price</th>
             </tr>
         </thead>
 
         <tbody>
-            @*If( item is represented more than once in shoppinglist) create only one post
             <tr>
-                <td>@item.Id</td>
-                <td><img src="@item.Url" width="180px" /></td>
-                <td>@item.Name</td>
-                <td>@item.Description</td>
-                <td>@item.Quantity</td>
-                <td>@item.Price</td>
+                <td>@(wsh.ShoppingCarts.IndexOf(product) + 1)</td>
+                <td><img src="@product.Url" width="180px" /></td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>@product.Quantity</td>
+                <td>@product.Price</td>
             </tr>
         </tbody>
     </table>
 }
- *@
 
 <form class="form-control">
     @*TODO: If user exist, print adress and name automatically*@
@@ -56,16 +61,32 @@
 </form>
 <input type="submit" @onclick="NavigateToConfirmation" value="Submit" />
 
+
 @code {
     public bool purchaseComplete = false;
     public bool submited = false;
+    ApplicationUser? user;
+    AuthenticationState authenticationState;
+
+    public async Task UpdateUser()
+    {
+        await wsh.UpdateUser(user);
+    }
 
     public void NavigateToConfirmation()
     {
-     //   wsh.AddCustomer(wsh.Customer.Username, wsh.Customer.Password);
+        //   wsh.AddCustomer(wsh.Customer.Username, wsh.Customer.Password);
         if (wsh.Customer.Username is not null && wsh.Customer.Password is not null && wsh.error == false)
             navigationManager.NavigateTo("/confirmation");
-
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            authenticationState = await StateProvider.GetAuthenticationStateAsync();
+            var stateUser = await userManager.GetUserAsync(authenticationState.User);
+            user = await wsh.GetUserShopinglistInfo(stateUser);
+        }
+    }
 }
