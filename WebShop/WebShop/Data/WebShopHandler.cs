@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
-using WebShop.Common.Classes;
+using Microsoft.Identity.Client;
 using WebShop.Data.Models;
 
 namespace WebShop.Data
@@ -8,26 +9,26 @@ namespace WebShop.Data
     public class WebShopHandler
     {
         public Products Products = new();
+        public ApplicationUser applicationUser;
+
         public List<Products> ShoppingCart = new();
         public List<Products> ProductList = new();
+        
 
         public bool error = false;
         public string errorMessage = string.Empty;
-
+        private const string apiKey = "oSZAPBiQWuTEFVLaXLzrkQ==SCNxLNPoxMs72JLy";
 
         //Have a list with shoppinglist.
         //Store that list in local storage? or database (not possible)       
         public NavigationManager navigationManager { get; set; }
 
         private readonly ApplicationDbContext _context;
-
         public WebShopHandler(ApplicationDbContext context) => _context = context;
-
-
 
         //Fetch products
         public List<Products> GetAllProducts() => _context.Products.ToList();
-        public void GetProductsById(int id)
+        public Products GetProductsById(int id)
         {
             foreach (var product in _context.Products)
             {
@@ -35,16 +36,45 @@ namespace WebShop.Data
                 {
                     Products = product;
                 }
+                else
+                    continue;
             }
+            return Products;
         }
         //Add to cart
         public void AddToCart(int id)
         {
-            GetProductsById(id);
+            //If the item already exists, do no add it to the cart.
+
+            Products = GetProductsById(id);
+            foreach (var product in ShoppingCart)
+            {
+                if (ShoppingCart.Contains(product))
+                    break;
+            }
             ShoppingCart.Add(Products);
             Products.Quantity--;
-            //_context.Products.Update(Products);
         }
+        public void ConfirmPurchase(bool purchaseConfirmed)
+        {
+            if (purchaseConfirmed)
+            {
+                _context.ShoppingCarts.Where(p => p.IsCompleted == true);
+                _context.Products.Update(Products);
+                ShoppingCart.Clear();
+            }
+        }
+
+        //public List<Products> GetAllItemsBought()
+        //{
+        //    _context.ShoppingCarts.Add(new ShoppingCart
+        //    {
+        //        User = applicationUser,
+        //        IsCompleted = false,
+        //        ShoppingList = ShoppingCart
+        //    });
+        //    return ShoppingCart;
+        //}
 
         //User related methods
         public async Task Seed()
@@ -103,6 +133,7 @@ namespace WebShop.Data
         }
         public async Task UpdateUser(ApplicationUser user)
         {
+            applicationUser = user;
             _context.Update(user);
             _context.SaveChanges();
         }

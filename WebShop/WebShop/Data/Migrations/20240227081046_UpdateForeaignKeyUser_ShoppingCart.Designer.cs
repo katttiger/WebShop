@@ -12,8 +12,8 @@ using WebShop.Data;
 namespace WebShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240225140133_UpdateRelaitonshipShoppingcartUser")]
-    partial class UpdateRelaitonshipShoppingcartUser
+    [Migration("20240227081046_UpdateForeaignKeyUser_ShoppingCart")]
+    partial class UpdateForeaignKeyUser_ShoppingCart
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,45 +158,6 @@ namespace WebShop.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("WebShop.Common.Classes.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsOnSale")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ShoppingCartId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShoppingCartId");
-
-                    b.ToTable("Product");
-                });
-
             modelBuilder.Entity("WebShop.Data.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -262,9 +223,6 @@ namespace WebShop.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("ShoppingCartId")
-                        .IsUnique();
-
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -293,11 +251,16 @@ namespace WebShop.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ShoppingCartId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShoppingCartId");
 
                     b.ToTable("Products");
                 });
@@ -310,22 +273,17 @@ namespace WebShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("ShoppingCarts");
                 });
@@ -381,30 +339,33 @@ namespace WebShop.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebShop.Common.Classes.Product", b =>
+            modelBuilder.Entity("WebShop.Data.Models.Products", b =>
                 {
                     b.HasOne("WebShop.Data.Models.ShoppingCart", null)
-                        .WithMany("Shoppinglist")
+                        .WithMany("ShoppingList")
                         .HasForeignKey("ShoppingCartId");
-                });
-
-            modelBuilder.Entity("WebShop.Data.ApplicationUser", b =>
-                {
-                    b.HasOne("WebShop.Data.Models.ShoppingCart", "Shoppinglist")
-                        .WithOne("User")
-                        .HasForeignKey("WebShop.Data.ApplicationUser", "ShoppingCartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shoppinglist");
                 });
 
             modelBuilder.Entity("WebShop.Data.Models.ShoppingCart", b =>
                 {
-                    b.Navigation("Shoppinglist");
-
-                    b.Navigation("User")
+                    b.HasOne("WebShop.Data.ApplicationUser", "User")
+                        .WithOne("ShoppingCart")
+                        .HasForeignKey("WebShop.Data.Models.ShoppingCart", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WebShop.Data.ApplicationUser", b =>
+                {
+                    b.Navigation("ShoppingCart")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WebShop.Data.Models.ShoppingCart", b =>
+                {
+                    b.Navigation("ShoppingList");
                 });
 #pragma warning restore 612, 618
         }

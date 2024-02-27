@@ -8,58 +8,59 @@
 @inject NavigationManager navigationManager
 
 <h3>Confirmation</h3>
-<WebshopHeader>@*  ShoppingListLength="wsh._db.ShoppingList.Count"> *@</WebshopHeader>
+<WebshopHeader>@*  ShoppingListLength="wsh.ShoppingCart.Count"> *@</WebshopHeader>
 @if (purchaseConfirmed)
 {
     <h2>Thank you for purchasing!</h2>
 }
 else
 {
-   @*  @foreach (var item in @* wsh._db.ShoppingList)
+    @foreach (var product in wsh.ShoppingCart)
     {
         <table class="table">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Picture</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Price/item</th>
-                    <th>Price</th>
-                    <th>Price*quantity</th>
+                  <th>#</th>
+                <th>Picture</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price/item</th>
                 </tr>
             </thead>
 
             <tbody>
                 <tr>
-                    <td>@item.Id</td>
-                    <td><img src="@item.Url" width="180px" /></td>
-                    <td>@item.Name</td>
-                    <td>@item.Description</td>
-                    <td>@item.Price</td>
-                    <td>@item.Quantity</td>
-                    <td>@(item.Price * item.Quantity)</td>
-
+                    <td>@(wsh.ShoppingCart.IndexOf(product) + 1)</td
+                    <td><img src="@product.Url" width="180px" /></td>
+                    <td>@product.Name</td>
+                    <td>@product.Description</td>
+                    <td>@product.Quantity</td>
+                    <td>@product.Price</td>
                 </tr>
             </tbody>
-        </table> *@
-    }@* 
+        </table>
+    }
+ }
+    
+    @*
     <form class="form-control">
         <input class="form-control" type="text" placeholder="Name" @bind="wsh.Customer.Username" disabled />
         <input class="form-control" type="text" placeholder="Adress" @bind="wsh.Customer.Password" disabled />
     </form>
     <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
  *@
-}
 
-@code {
+    @code {
+
+        //Here we update the quantity in the database
     public bool purchaseConfirmed = false;
 
     public async Task ConfirmPurchase()
     {
         purchaseConfirmed = true;
-       //wsh._db.ShoppingList.Clear();
-        await Task.Delay(600);
+        wsh.ConfirmPurchase(purchaseConfirmed);
+        await Task.Delay(700);
         navigationManager.NavigateTo("/");
     }
 }

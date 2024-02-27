@@ -3,12 +3,10 @@
 @using WebShop.Data;
 @using Microsoft.AspNetCore.Authorization;
 
+@inject WebShopHandler wsh;
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider StateProvider;
-@inject WebShopHandler wsh;
 @inject UserManager<ApplicationUser> userManager;
-
-@attribute [Authorize]
 @rendermode InteractiveServer
 
 
@@ -32,56 +30,56 @@
                 <th>Name</th>
                 <th>Description</th>
                 <th>Quantity</th>
-                <th>Price</th>
+                <th>Price/item</th>
             </tr>
         </thead>
-        @*
-    <tbody>
-    <tr>
-    <td>@(wsh.ShoppingCarts.IndexOf(product) + 1)</td>
-    <td><img src="@product.Url" width="180px" /></td>
-    <td>@product.Name</td>
-    <td>@product.Description</td>
-    <td>@product.Quantity</td>
-    <td>@product.Price</td>
-    </tr>
-    </tbody> *@
+        <tbody>
+            <tr>
+                <td>@(wsh.ShoppingCart.IndexOf(product) + 1)</td>
+                <td><img src="@product.Url" width="180px" /></td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>1</td>
+                <td>@product.Price</td>
+            </tr>
+        </tbody>
     </table>
 }
 
 <form class="form-control">
     @*TODO: If user exist, print adress and name automatically*@
     <label class="form-label">Name</label>
-    <input type="text" class="form-control" required @bind="user.NormalizedUserName" />
+    <input type="text" class="form-control" required placeholder="@wsh.applicationUser.UserName" />
 
     <label class="form-label">Adress</label>
-    <input type="text" class="form-control" required @bind="user.NormalizedEmail" />
+    <input type="text" class="form-control" required placeholder="@wsh.applicationUser.Email" />
 
     <input type="checkbox" class="form-check" required" /> Agree to terms and privacy policy
 </form>
-<input type="submit" @onclick="NavigateToConfirmation" value="Submit" />
-
+<input type="submit" @onclick="NavigateToConfirmation" value="Confirm" />
 
 @code {
     public bool purchaseComplete = false;
     public bool submited = false;
+    public List<Products> ShoppingList = new();
+
     ApplicationUser? user;
     AuthenticationState authenticationState;
-
-    public async Task UpdateUser()
-    {
-        await wsh.UpdateUser(user);
-    }
-
-    public void NavigateToConfirmation() => navigationManager.NavigateTo("/confirmation");
-
+    //Shoppingcart is reset to 0 when entering the checkout, even if wares have been added.
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // Vi hämtar ut det nuvarande autentiseringsStatet som innehåller information om användare som är inloggar
             authenticationState = await StateProvider.GetAuthenticationStateAsync();
+            // Med hjälp av authenticationState.User kan vi hämta ut vår faktiskt ApplicationUser
             var stateUser = await userManager.GetUserAsync(authenticationState.User);
+            // Den kan vi sen använda för att hämta relaterad data från databasen
             user = await wsh.GetUserShopinglistInfo(stateUser);
+            wsh.applicationUser = user;
         }
     }
+
+    public void NavigateToConfirmation() => navigationManager.NavigateTo("/confirmation");
 }
