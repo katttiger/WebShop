@@ -14,9 +14,10 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject WebShopHandler wsh
 
 <PageTitle>Register</PageTitle>
-<WebshopHeader></WebshopHeader>
+<WebshopHeader ShoppingListLength="@wsh.ShoppingCart.Count()"></WebshopHeader>
 <h1>Register</h1>
 
 <div class="row">

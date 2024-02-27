@@ -1,11 +1,16 @@
-﻿@using WebShop.Data
-@page "/"
-
+﻿@page "/"
+@using WebShop.Data
+@using Microsoft.AspNetCore.Authorization;
 @using WebShop.Data.Models
-@rendermode InteractiveServer
 
-@inject WebShopHandler wsh
 @inject NavigationManager navigationManager
+@inject AuthenticationStateProvider StateProvider;
+@inject WebShopHandler wsh;
+@inject UserManager<ApplicationUser> userManager;
+
+
+@attribute [Authorize]
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 <WebshopHeader ShoppingListLength="@wsh.ShoppingCart.Count()"
@@ -27,7 +32,7 @@
 }
 
 <div class="d-flex flex-wrap justify-content-start">
-    @foreach (var product in ProductsList)
+    @foreach (var product in wsh.ProductList)
     {
         <ProductHomeCard Product="@product"
                          OnShowProductSide="()=>ShowProductSide(product.Id)"
@@ -40,7 +45,8 @@
 
     string errorMessage = string.Empty;
     bool error = false;
-    public List<Products> ProductsList = new();
+    ApplicationUser? user;
+    AuthenticationState authenticationState;
 
     //Navigation
     public void ShowProductSide(int id)
@@ -52,25 +58,34 @@
     public void GoToCheckout() => navigationManager.NavigateTo("/checkout");
 
     //Bind AddToCartButton to method:
-    //public void AddToCart(int id) => wsh.AddToShoppingList(id);
+    public void AddToCart(int id) => wsh.AddToCart(id);
 
-    public void AddToCart(int id)
-    {
-        wsh.AddToCart(id);
-    }
 
     protected override async Task OnInitializedAsync()
     {
         //await wsh.Seed();
-        ProductsList = wsh.GetAllProducts();
-    }
+        wsh.ProductList = wsh.GetAllProducts();
 
-    protected override void OnAfterRender(bool firstRender)
+    }
+    public async Task UpdateUser()
+    {
+        wsh.applicationUser = user;
+        await wsh.UpdateUser(user);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            StateHasChanged();
+            // Vi hämtar ut det nuvarande autentiseringsStatet som innehåller information om användare som är inloggar
+            authenticationState = await StateProvider.GetAuthenticationStateAsync();
+            // Med hjälp av authenticationState.User kan vi hämta ut vår faktiskt ApplicationUser
+            var stateUser = await userManager.GetUserAsync(authenticationState.User);
+            // Den kan vi sen använda för att hämta relaterad data från databasen
+            user = await wsh.GetUserShopinglistInfo(stateUser);
+            wsh.applicationUser = user;
         }
+
+        StateHasChanged();
     }
 }
 

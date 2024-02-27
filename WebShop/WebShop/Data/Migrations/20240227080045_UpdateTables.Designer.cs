@@ -12,8 +12,8 @@ using WebShop.Data;
 namespace WebShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240226102015_UpdateShoppingCartII")]
-    partial class UpdateShoppingCartII
+    [Migration("20240227080045_UpdateTables")]
+    partial class UpdateTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -248,16 +248,11 @@ namespace WebShop.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ShoppingCartId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ShoppingCartId");
 
                     b.ToTable("Products");
                 });
@@ -269,6 +264,9 @@ namespace WebShop.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -333,13 +331,6 @@ namespace WebShop.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebShop.Data.Models.Products", b =>
-                {
-                    b.HasOne("WebShop.Data.Models.ShoppingCart", null)
-                        .WithMany("Products")
-                        .HasForeignKey("ShoppingCartId");
-                });
-
             modelBuilder.Entity("WebShop.Data.Models.ShoppingCart", b =>
                 {
                     b.HasOne("WebShop.Data.ApplicationUser", "User")
@@ -355,11 +346,6 @@ namespace WebShop.Migrations
                 {
                     b.Navigation("ShoppingCart")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("WebShop.Data.Models.ShoppingCart", b =>
-                {
-                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

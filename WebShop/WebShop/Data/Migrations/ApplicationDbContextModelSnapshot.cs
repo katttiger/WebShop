@@ -200,6 +200,9 @@ namespace WebShop.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ShoppingCartId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -267,6 +270,9 @@ namespace WebShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -333,7 +339,7 @@ namespace WebShop.Migrations
             modelBuilder.Entity("WebShop.Data.Models.Products", b =>
                 {
                     b.HasOne("WebShop.Data.Models.ShoppingCart", null)
-                        .WithMany("Products")
+                        .WithMany("ShoppingList")
                         .HasForeignKey("ShoppingCartId");
                 });
 
@@ -356,7 +362,7 @@ namespace WebShop.Migrations
 
             modelBuilder.Entity("WebShop.Data.Models.ShoppingCart", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("ShoppingList");
                 });
 #pragma warning restore 612, 618
         }
