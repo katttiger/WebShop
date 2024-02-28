@@ -3,8 +3,10 @@
 @page "/product/{Id:int}"
 
 @rendermode InteractiveServer
-@inject WebShopHandler wsh
 @inject NavigationManager navigationManager
+@inject AuthenticationStateProvider StateProvider
+@inject WebShopHandler wsh
+@inject UserManager<ApplicationUser> userManager
 
 <PageTitle>ProductInfo</PageTitle>
 
@@ -27,6 +29,9 @@
 @code {
     [Parameter]
     public int Id { get; set; }
+    ApplicationUser? user;
+    AuthenticationState authenticationState;
+
 
     bool error = false;
     public string errorMessage = string.Empty;
@@ -37,22 +42,20 @@
 
     public void AddToCart(int id)
     {
-        wsh.AddToCart(id);
+        wsh.AddToCart(id, user);
     }
 
     protected override void OnInitialized()
     {
-        Product = wsh.Products;
+        Product = wsh.GetProductsById(Id);
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            // products = wsh._db.GetList();
-            // product = wsh._db.Products.Find(p => p.Id == Id);
-
-            StateHasChanged();
-        }
+        authenticationState = await StateProvider.GetAuthenticationStateAsync();
+        var stateUser = await userManager.GetUserAsync(authenticationState.User);
+        user = await wsh.GetUserShopinglistInfo(stateUser);
+       // wsh.applicationUser = user;
+        StateHasChanged();
     }
 }

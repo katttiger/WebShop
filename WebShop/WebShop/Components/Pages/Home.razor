@@ -4,10 +4,9 @@
 @using WebShop.Data.Models
 
 @inject NavigationManager navigationManager
-@inject AuthenticationStateProvider StateProvider;
-@inject WebShopHandler wsh;
-@inject UserManager<ApplicationUser> userManager;
-
+@inject AuthenticationStateProvider StateProvider
+@inject WebShopHandler wsh
+@inject UserManager<ApplicationUser> userManager
 
 @attribute [Authorize]
 @rendermode InteractiveServer
@@ -20,16 +19,10 @@
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item" <a href="#">Home</a></li>
+
         </ol>
     </nav>
 </div>
-
-@if (error)
-{
-    <div>
-        <alert class="alert alert-warning" role="alert"><b>Error:</b>@errorMessage</alert>
-    </div>
-}
 
 <div class="d-flex flex-wrap justify-content-start">
     @foreach (var product in wsh.ProductList)
@@ -42,7 +35,8 @@
 
 <WebshopFooter></WebshopFooter>
 @code {
-
+    //TODO: Computer remembers the shoppinglist when user logs in and out.
+    //TODO: Apply curency API
     string errorMessage = string.Empty;
     bool error = false;
     ApplicationUser? user;
@@ -55,10 +49,13 @@
         navigationManager.NavigateTo("/product/" + id);
     }
 
-    public void GoToCheckout() => navigationManager.NavigateTo("/checkout");
+    public void GoToCheckout()
+    {
+        navigationManager.NavigateTo("/checkout");
+    }
 
     //Bind AddToCartButton to method:
-    public void AddToCart(int id) => wsh.AddToCart(id);
+    public void AddToCart(int id) => wsh.AddToCart(id, user);
 
 
     protected override async Task OnInitializedAsync()
@@ -66,6 +63,14 @@
         //await wsh.Seed();
         wsh.ProductList = wsh.GetAllProducts();
 
+        // Vi hämtar ut det nuvarande autentiseringsStatet som innehåller information om användare som är inloggar
+        authenticationState = await StateProvider.GetAuthenticationStateAsync();
+        // Med hjälp av authenticationState.User kan vi hämta ut vår faktiskt ApplicationUser
+        var stateUser = await userManager.GetUserAsync(authenticationState.User);
+        // Den kan vi sen använda för att hämta relaterad data från databasen
+        user = await wsh.GetUserShopinglistInfo(stateUser);
+        wsh.applicationUser = user;
+        StateHasChanged();
     }
     public async Task UpdateUser()
     {
@@ -84,7 +89,7 @@
             user = await wsh.GetUserShopinglistInfo(stateUser);
             wsh.applicationUser = user;
         }
-
+        user = wsh.applicationUser;
         StateHasChanged();
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using WebShop.Data.Models;
 
 namespace WebShop.Data
@@ -13,15 +11,11 @@ namespace WebShop.Data
 
         public List<Products> ShoppingCart = new();
         public List<Products> ProductList = new();
-        
+        public NavigationManager navigationManager { get; set; }
 
         public bool error = false;
         public string errorMessage = string.Empty;
         private const string apiKey = "oSZAPBiQWuTEFVLaXLzrkQ==SCNxLNPoxMs72JLy";
-
-        //Have a list with shoppinglist.
-        //Store that list in local storage? or database (not possible)       
-        public NavigationManager navigationManager { get; set; }
 
         private readonly ApplicationDbContext _context;
         public WebShopHandler(ApplicationDbContext context) => _context = context;
@@ -42,18 +36,19 @@ namespace WebShop.Data
             return Products;
         }
         //Add to cart
-        public void AddToCart(int id)
+        public void AddToCart(int id, ApplicationUser user)
         {
-            //If the item already exists, do no add it to the cart.
-
             Products = GetProductsById(id);
-            foreach (var product in ShoppingCart)
+            if (user.ShoppingCart is null)
             {
-                if (ShoppingCart.Contains(product))
-                    break;
+                user.ShoppingCart = new();
             }
-            ShoppingCart.Add(Products);
+
+            user.ShoppingCart.ShoppingList.Add(Products);
+            ShoppingCart = user.ShoppingCart.ShoppingList;
             Products.Quantity--;
+            _context.Users.Update(user);
+            _context.SaveChanges();
         }
         public void ConfirmPurchase(bool purchaseConfirmed)
         {
@@ -65,18 +60,10 @@ namespace WebShop.Data
             }
         }
 
-        //public List<Products> GetAllItemsBought()
-        //{
-        //    _context.ShoppingCarts.Add(new ShoppingCart
-        //    {
-        //        User = applicationUser,
-        //        IsCompleted = false,
-        //        ShoppingList = ShoppingCart
-        //    });
-        //    return ShoppingCart;
-        //}
-
         //User related methods
+
+        //Fetch shoppinglist!
+        //Shoppinglist==List<Products> ItemsPutInCart=new();
         public async Task Seed()
         {
             _context.Add(new Products
@@ -131,13 +118,26 @@ namespace WebShop.Data
             });
             await _context.SaveChangesAsync();
         }
+
         public async Task UpdateUser(ApplicationUser user)
         {
-            applicationUser = user;
             _context.Update(user);
+            applicationUser = user;
             _context.SaveChanges();
         }
-        public async Task<ApplicationUser> GetUserShopinglistInfo(ApplicationUser user) => _context.Users.Include(u => u.ShoppingCart).First(u => u.Id == user.Id);
+        public async Task<ApplicationUser> GetUserShopinglistInfo(ApplicationUser user)
+        {
+            if (user.ShoppingCart is null)
+            {
+                var shoppingCart = new ShoppingCart();
+                shoppingCart.User = user;
+                var createdCart = _context.ShoppingCarts.Add(shoppingCart);
+                _context.SaveChanges();
+            }
+            var foundUser = _context.Users.Include(user => user.ShoppingCart).First(u => u.Id == user.Id);
+            applicationUser = foundUser;
+            return foundUser;
+        }
     }
 }
 

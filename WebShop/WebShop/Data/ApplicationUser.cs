@@ -10,7 +10,7 @@ namespace WebShop.Data
     {
         [ForeignKey("ShoppingCartId")]
         public int ShoppingCartId { get; set; }
-
-        public ShoppingCart ShoppingCart { get; set; }
+        //lägg till shoppinlist
+        public ShoppingCart ShoppingCart { get; set; } = new();
     }
 }
