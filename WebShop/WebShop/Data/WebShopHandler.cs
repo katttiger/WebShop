@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using WebShop.Data.Models;
 
@@ -59,6 +60,17 @@ namespace WebShop.Data
                 ShoppingCart.Clear();
             }
         }
+
+        //public List<Products> GetAllItemsBought()
+        //{
+        //    _context.ShoppingCarts.Add(new ShoppingCart
+        //    {
+        //        User = applicationUser,
+        //        IsCompleted = false,
+        //        ShoppingList = ShoppingCart
+        //    });
+        //    return ShoppingCart;
+        //}
 
         //User related methods
 
@@ -121,6 +133,7 @@ namespace WebShop.Data
 
         public async Task UpdateUser(ApplicationUser user)
         {
+            applicationUser = user;
             _context.Update(user);
             applicationUser = user;
             _context.SaveChanges();
