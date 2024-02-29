@@ -41,7 +41,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>@(wsh.applicationUser.ShoppingCart.ShoppingList.IndexOf(product) + 1)</td>
+                <td>@(wsh.ShoppingCart.IndexOf(product) + 1)</td>
                 <td><img src="@product.Url" width="180px" /></td>
                 <td>@product.Name</td>
                 <td>@product.Description</td>
@@ -89,8 +89,30 @@
     {
         authenticationState = await StateProvider.GetAuthenticationStateAsync();
         var stateUser = await userManager.GetUserAsync(authenticationState.User);
-        user = await wsh.GetUserShopinglistInfo(stateUser);
-        //wsh.applicationUser = user;
+        if (stateUser is not null)
+            user = await wsh.GetUserShopinglistInfo(stateUser);
+        else
+        {
+            navigationManager.NavigateTo("/");
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            authenticationState = await StateProvider.GetAuthenticationStateAsync();
+            var stateUser = await userManager.GetUserAsync(authenticationState.User);
+            if (stateUser is not null)
+            {
+                user = await wsh.GetUserShopinglistInfo(stateUser);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/");
+            }
+        }
         StateHasChanged();
     }
 }

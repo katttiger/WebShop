@@ -6,12 +6,10 @@ namespace WebShop.Data.Models
     {
         public int Id { get; set; }
         public bool IsCompleted { get; set; }
-        public List<Products> ShoppingList = new();
+        public List<Products> ShoppingList { get; set; } = new();
+        
 
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
-
-
-
     }
 }

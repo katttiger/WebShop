@@ -75,8 +75,13 @@ else
     {
         authenticationState = await StateProvider.GetAuthenticationStateAsync();
         var stateUser = await userManager.GetUserAsync(authenticationState.User);
-        user = await wsh.GetUserShopinglistInfo(stateUser);
-        //wsh.applicationUser = user;
+        if (stateUser is not null)
+            user = await wsh.GetUserShopinglistInfo(stateUser);
+        else
+        {
+             navigationManager.NavigateTo("/");
+        }
         StateHasChanged();
     }
+    
 }
