@@ -7,6 +7,7 @@
 @inject HttpClient HttpClient
 @inject AuthenticationStateProvider StateProvider;
 @inject UserManager<ApplicationUser> userManager;
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 @rendermode InteractiveServer
 
@@ -52,12 +53,13 @@
                     <td>@product.Product.Name</td>
                     <td>@product.Product.Description</td>
                     <td>@product.Quantity</td>
-                    <td>@(Math.Round(product.Product.Price * exchangeRate,2)*product.Product.Quantity) @wsh.currency</td>
+                    <td>@(Math.Round(product.Product.Price * exchangeRate, 2) * product.Product.Quantity) @wsh.currency</td>
                 </tr>
             </tbody>
         </table>
     }
 }
+
 
 @if (user is not null)
 {
@@ -165,7 +167,16 @@
 
     public int IncremeantCount(int number) => number++;
 
-    public void NavigateToConfirmation() => navigationManager.NavigateTo("/confirmation");
+    public async void NavigateToConfirmation()
+    {
+        // Gör om [Items] till [ClientItems],
+        // annars blir det cirkelreferenser och vi kan inte lägga till det i sessionStorage
+        List<CartItemModel> clientCartItems = (List<CartItemModel>)user.ShoppingCart.ShoppingList.Select(i => new CartItemModel { Product = i.Product, id = i.id, ProductId = i.ProductId, Quantity = i.Quantity });
+
+        // Här lägger vi våra ClientItems i sessionStorage så vi kan hämta ut dem därifrån inne i Client
+        await sessionStorage.SetItemAsync(user.Id, wsh.ShoppingCart);
+        navigationManager.NavigateTo("/confirmation");
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -175,7 +186,6 @@
             user = await wsh.GetUserShopinglistInfo(stateUser);
         else
             navigationManager.NavigateTo("/");
-
         StateHasChanged();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -185,13 +195,9 @@
             authenticationState = await StateProvider.GetAuthenticationStateAsync();
             var stateUser = await userManager.GetUserAsync(authenticationState.User);
             if (stateUser is not null)
-            {
                 user = await wsh.GetUserShopinglistInfo(stateUser);
-            }
             else
-            {
                 navigationManager.NavigateTo("/");
-            }
         }
         StateHasChanged();
     }

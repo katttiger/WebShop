@@ -1,7 +1,7 @@
+using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using WebShop.Client.Pages;
 using WebShop.Common.Classes;
 using WebShop.Components;
 using WebShop.Components.Account;
@@ -19,8 +19,8 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<WebShopHandler>();
-
 builder.Services.AddScoped<HttpClient>();
+builder.Services.AddBlazoredSessionStorage();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -55,6 +55,8 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.MapGet("/fetchShopingList", () => "List");
 
 app.UseHttpsRedirection();
 
