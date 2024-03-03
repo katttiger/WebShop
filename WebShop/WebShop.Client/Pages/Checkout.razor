@@ -1,19 +1,19 @@
 ﻿@page "/checkout"
-@using WebShop.Common;
 @using WebShop.Data;
+@using Microsoft.AspNetCore.Authorization;
 
-@inject WebShopHandler wsh;
-@inject NavigationManager navigationManager
 @inject HttpClient HttpClient
-@inject AuthenticationStateProvider StateProvider;
-@inject UserManager<ApplicationUser> userManager;
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider StateProvider
+@inject WebShopHandler wsh
+@inject UserManager<ApplicationUser> userManager
 
+@* @attribute [Authorize] *@
 @rendermode InteractiveServer
 
 
 <PageTitle>Checkout</PageTitle>
 <WebshopHeader ShoppingListLength="wsh.ShoppingCart.Count()"></WebshopHeader>
-
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -21,39 +21,44 @@
         </ol>
     </nav>
 </div>
+@if (error)
+{
+    <alert role="alert">User is null</alert>
+}
 
 @foreach (var product in wsh.ShoppingCart)
 {
-    if (product.Product is not null)
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Picture</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Quantity</th>
-                    <th>Price/item</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>@(wsh.applicationUser.ShoppingCart.ShoppingList.IndexOf(product) + 1)</td>
-                    <td><img src="@product.Product.Url" width="180px" /></td>
-                    <td>@product.Product.Name</td>
-                    <td>@product.Product.Description</td>
-                    <td>@product.Quantity</td>
-                    <td>@(Math.Round((product.Product.Price * product.Quantity), 2)) @wsh.currency</td>
-                </tr>
-            </tbody>
-        </table>
-    }
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Picture</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price/item</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@(wsh.ShoppingCart.IndexOf(product) + 1)</td>
+                <td><img src="@product.Url" width="180px" /></td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>1</td>
+                <td>@product.Price</td>
+            </tr>
+        </tbody>
+    </table>
 }
 
 @if (user is not null)
 {
+
     <form class="form-control">
+        @*TODO: Fetch user info*@
+        @*TODO Connect list and user*@
+        @*TODO: If user exist, print adress and name automatically*@
         <label class="form-label">Name</label>
         <input type="text" class="form-control" required @bind="@user.UserName" />
 
@@ -69,14 +74,16 @@
     public bool purchaseComplete = false;
     ApplicationUser? user;
     AuthenticationState authenticationState;
-    int number = 0;
 
     public bool submited = false;
     public bool error = false;
 
-    public int IncremeantCount(int number) => number++;
 
-    public void NavigateToConfirmation() => navigationManager.NavigateTo("/confirmation");
+    public void NavigateToConfirmation()
+    {
+        //Använd sessionstorage
+        navigationManager.NavigateTo("/confirmation");
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,10 +92,12 @@
         if (stateUser is not null)
             user = await wsh.GetUserShopinglistInfo(stateUser);
         else
+        {
             navigationManager.NavigateTo("/");
-
+        }
         StateHasChanged();
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

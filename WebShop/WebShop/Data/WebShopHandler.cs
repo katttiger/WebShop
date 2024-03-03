@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Net.Http;
-using WebShop.Common.Classes;
 using WebShop.Data.Models;
+using WebShop.Common.Classes;
 
 namespace WebShop.Data
 {
@@ -10,15 +12,18 @@ namespace WebShop.Data
     {
         public Products Products;
         public ApplicationUser applicationUser;
+        public CartItem ShoppingCartItem;
 
-        public List<Products> ShoppingCart = new();
+        public List<CartItem> ShoppingCart = new();
         public List<Products> ProductList = new();
         public NavigationManager navigationManager { get; set; }
+
+        public string currency = string.Empty;
 
         public bool error = false;
         public string errorMessage = string.Empty;
 
-        public ExchagneConverter converter;
+
         private readonly ApplicationDbContext _context;
         public WebShopHandler(ApplicationDbContext context) => _context = context;
 
@@ -41,26 +46,43 @@ namespace WebShop.Data
         {
             Products = GetProductsById(id);
             if (user.ShoppingCart is null)
-            {
                 user.ShoppingCart = new();
+
+            CartItem cartItem = new CartItem(Products, 1, Products.Id);
+
+            if (ShoppingCart.Count() > 0)
+            {
+                var item = user.ShoppingCart.ShoppingList.Find(p => p.Product.Id == cartItem.Product.Id);
+                if (item == null)
+                    ShoppingCart.Add(cartItem);
+                else
+                {
+                    user.ShoppingCart.ShoppingList.Find(i => i.Product.Id == cartItem.Product.Id).Quantity++;
+                }
             }
-            //Fix index
-            user.ShoppingCart.ShoppingList.Add(Products);
-            ShoppingCart = user.ShoppingCart.ShoppingList;
+            else
+                ShoppingCart.Add(cartItem);
+
             Products.Quantity--;
-            _context.Users.Update(user);
+            ShoppingCart = user.ShoppingCart.ShoppingList;
+            _context.Update(user);
             _context.SaveChanges();
         }
 
-        public void ConfirmPurchase(bool purchaseConfirmed)
+        public void RemoveFromCart(ApplicationUser user)
         {
-            if (purchaseConfirmed)
-            {
-                _context.ShoppingCarts.Where(p => p.IsCompleted == true);
-                _context.Products.Update(Products);
-                ShoppingCart.Clear();
-            }
+            user.ShoppingCart.ShoppingList = new();
+            _context.Update(user);
+            _context.SaveChanges();
         }
+
+        public void ConfirmPurchase()
+        {
+            ShoppingCart.Clear();
+            applicationUser.ShoppingCart.ShoppingList = ShoppingCart;
+            _context.SaveChanges();
+        }
+
         public async Task Seed()
         {
             _context.Add(new Products
@@ -116,16 +138,8 @@ namespace WebShop.Data
             await _context.SaveChangesAsync();
         }
 
-
-        public void Exchange()
-        {
-            string a = "USD";
-            string b = "EUR";
-            converter.Method(b, a);
-        }
         public async Task UpdateUser(ApplicationUser user)
         {
-            applicationUser = user;
             _context.Update(user);
             applicationUser = user;
             _context.SaveChanges();
@@ -133,19 +147,43 @@ namespace WebShop.Data
 
         public async Task<ApplicationUser> GetUserShopinglistInfo(ApplicationUser user)
         {
-            //Problem: The cart is reset when we log out of the application.
             if (user.ShoppingCart is null)
             {
                 var shoppingCart = new ShoppingCart();
                 shoppingCart.User = user;
+                shoppingCart.User.Id = user.Id;
+                user.ShoppingCartId = shoppingCart.Id;
                 var createdCart = _context.ShoppingCarts.Add(shoppingCart);
                 user.ShoppingCartId = shoppingCart.Id;
+                shoppingCart.Id = user.ShoppingCartId;
                 _context.SaveChanges();
             }
-            var foundUser = _context.Users.Include(user => user.ShoppingCart).ThenInclude(cart => cart.ShoppingList).First(u => u.Id == user.Id);
+            else if (user.ShoppingCart.ShoppingList == null || user.ShoppingCart.ShoppingList.Count() == 0)
+            {
+                user.ShoppingCart.ShoppingList = ShoppingCart;
+                _context.SaveChanges();
+            }
+            //Fetches a list with null-values since they are not connected to a product.
+            //Walks through the empty contructor in CartItem, then it return null
+            var foundUser = _context.Users.Include(user => user.ShoppingCart.ShoppingList)
+                .First(u => u.Id == user.Id);
+            foreach (var item in foundUser.ShoppingCart.ShoppingList)
+            {
+                //IF any product is null
+                if (item.Product == null)
+                {
+                    //THEN go somewhere and fetch the item that has the same productId
+                    //as the item you are comparing to.
+
+                    ProductList = _context.Products.ToList();
+                    var product = ProductList.Find(i => i.Id == item.ProductId);
+                    if (product is not null)
+                        foundUser.ShoppingCart.ShoppingList.Find(p => p.ProductId == product.Id).Product = product;
+                }
+            }
             applicationUser = foundUser;
+            ShoppingCart = foundUser.ShoppingCart.ShoppingList;
             return foundUser;
         }
     }
 }
-

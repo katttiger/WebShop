@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Authorization;
 @using WebShop.Data.Models
 
+@inject HttpClient HttpClient
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider StateProvider
 @inject WebShopHandler wsh
@@ -15,7 +16,7 @@
 <PageTitle>Home</PageTitle>
 <WebshopHeader ShoppingListLength="@wsh.ShoppingCart.Count()"
                OnNavigationToCashier="GoToCheckout"></WebshopHeader>
-@*Connect the buttons in the webshopheader to a navigationmethod that guides to the checkout.*@
+
 <div>
     <nav stype="--bs-breadcrumb-divider:'>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -25,10 +26,20 @@
     </nav>
 </div>
 
+<div class="btn-group-sm">
+    <nav>
+        <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
+        <button class="btn btn-success opacity-50" @onclick="()=>ExchangeAsync('U', currentCurrency)">&#36;</button>
+        <button class="btn btn-primary opacity-50" @onclick="()=>ExchangeAsync('D', currentCurrency)">DKK</button>
+    </nav>
+</div>
+
 <div class="d-flex flex-wrap justify-content-start">
     @foreach (var product in wsh.ProductList)
     {
         <ProductHomeCard Product="@product"
+                         Exhangerate="@exchangeRate"
+                         Currency="@currency"
                          OnShowProductSide="()=>ShowProductSide(product.Id)"
                          OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
     }
@@ -36,11 +47,9 @@
 
 <WebshopFooter></WebshopFooter>
 @code {
-    //TODO: Computer remembers the shoppinglist when user logs in and out.
-    //TODO: Apply curency API
-    string errorMessage = string.Empty;
-    bool error = false;
-
+    public double exchangeRate = 1;
+    public string currency = "DKK";
+    char currentCurrency = 'D';
     ApplicationUser? user;
     AuthenticationState authenticationState;
 
@@ -53,16 +62,104 @@
         navigationManager.NavigateTo("/product/" + id);
     }
 
+    public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
+    {
+        HttpClient.DefaultRequestHeaders.Clear();
+        string fromCurrency = string.Empty;
+        string toCurrency = string.Empty;
+
+        //$=>DKK
+        if (toCurrencyInput == 'D' && currentCurrency == 'U')
+        {
+            fromCurrency = "USD";
+            toCurrency = "DKK";
+            currency = "DKK";
+            currentCurrency = 'D';
+        }
+        //E=>DKK
+        else if (toCurrencyInput == 'D' && currentCurrency == 'E')
+        {
+            fromCurrency = "EUR";
+            toCurrency = "DKK";
+            currency = "DKK";
+            currentCurrency = 'D';
+        }
+
+        //DKK=>€
+        else if (toCurrencyInput == 'E' && currentCurrency == 'D')
+        {
+            fromCurrency = "DKK";
+            toCurrency = "EUR";
+            currency = "€";
+            currentCurrency = 'E';
+        }
+        //$=>€
+        else if (toCurrencyInput == 'E' && currentCurrency == 'U')
+        {
+            fromCurrency = "USD";
+            toCurrency = "EUR";
+            currency = "€";
+            currentCurrency = 'E';
+        }
+
+        //€=>$
+        else if (toCurrencyInput == 'U' && currentCurrency == 'E')
+        {
+            fromCurrency = "EUR";
+            toCurrency = "USD";
+            currency = "$";
+            currentCurrency = 'U';
+        }
+        //DKK=>$
+        else if (toCurrencyInput == 'U' && currentCurrency == 'D')
+        {
+            fromCurrency = "DKK";
+            toCurrency = "USD";
+            currency = "$";
+            currentCurrency = 'U';
+        }
+        else
+        {
+            if (currentCurrency == 'D')
+            {
+                fromCurrency = "DKK";
+                toCurrency = "DKK";
+                currency = currency;
+            }
+            else if (currentCurrency == 'E')
+            {
+                fromCurrency = "EUR";
+                toCurrency = "EUR";
+                currency = currency;
+            }
+            else
+            {
+                fromCurrency = "USD";
+                toCurrency = "USD";
+                currency = currency;
+            }
+        }
+        HttpClient.DefaultRequestHeaders.Add("X-Api-Key", "oSZAPBiQWuTEFVLaXLzrkQ==SCNxLNPoxMs72JLy");
+        var response = await HttpClient.GetFromJsonAsync<ResponseType>($"https://api.api-ninjas.com/v1/exchangerate?pair={fromCurrency}_{toCurrency}");
+        exchangeRate = response.exchange_rate;
+        wsh.currency = currency;
+        HttpClient.DefaultRequestHeaders.Clear();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        //await wsh.Seed();
+        wsh.ProductList = wsh.GetAllProducts();
+        if (wsh.ProductList.Count() < 5)
+        {
+            await wsh.Seed();
+        }
         wsh.ProductList = wsh.GetAllProducts();
         authenticationState = await StateProvider.GetAuthenticationStateAsync();
         var stateUser = await userManager.GetUserAsync(authenticationState.User);
-        user = await wsh.GetUserShopinglistInfo(stateUser);
+        if (stateUser is not null)
+            user = await wsh.GetUserShopinglistInfo(stateUser);
         StateHasChanged();
     }
-
     public async Task UpdateUser()
     {
         wsh.applicationUser = user;
@@ -77,13 +174,10 @@
             var stateUser = await userManager.GetUserAsync(authenticationState.User);
             if (stateUser is not null)
                 user = await wsh.GetUserShopinglistInfo(stateUser);
-            else
-            {
-
-            }
             StateHasChanged();
         }
         StateHasChanged();
     }
+
 }
 

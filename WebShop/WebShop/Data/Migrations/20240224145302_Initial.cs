@@ -40,6 +40,7 @@ namespace WebShop.Migrations
                     Price = table.Column<double>(type: "float", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsOnSale=table.Column<bool>(type:"bit", nullable: false),
                     ShoppingCartId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

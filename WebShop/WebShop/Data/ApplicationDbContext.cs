@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using WebShop.Common.Classes;
 using WebShop.Data.Models;
 
 namespace WebShop.Data
@@ -9,6 +10,7 @@ namespace WebShop.Data
         /*
          'The dependent side could not be determined for the one-to-one relationship between 'ShoppingCart.User' and 'ApplicationUser.ShoppingCart'*/
         public DbSet<Products> Products { get; set; }
-        public DbSet<ShoppingCart> ShoppingCarts { get; set;}
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
     }
 }

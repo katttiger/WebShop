@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebShop.Data;
 
@@ -11,9 +12,11 @@ using WebShop.Data;
 namespace WebShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240302135722_FinalEdits")]
+    partial class FinalEdits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,12 +177,11 @@ namespace WebShop.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("ShoppingCartId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItem");
                 });
 
             modelBuilder.Entity("WebShop.Data.ApplicationUser", b =>
@@ -358,8 +360,8 @@ namespace WebShop.Migrations
             modelBuilder.Entity("WebShop.Common.Classes.CartItem", b =>
                 {
                     b.HasOne("WebShop.Data.Models.Products", "Product")
-                        .WithOne("CartItem")
-                        .HasForeignKey("WebShop.Common.Classes.CartItem", "ProductId")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -384,12 +386,6 @@ namespace WebShop.Migrations
             modelBuilder.Entity("WebShop.Data.ApplicationUser", b =>
                 {
                     b.Navigation("ShoppingCart")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("WebShop.Data.Models.Products", b =>
-                {
-                    b.Navigation("CartItem")
                         .IsRequired();
                 });
 

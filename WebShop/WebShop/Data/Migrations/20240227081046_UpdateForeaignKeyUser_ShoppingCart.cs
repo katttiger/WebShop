@@ -10,11 +10,6 @@ namespace WebShop.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "ShoppingCartId",
-                table: "Products",
-                type: "int",
-                nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "ShoppingCartId",
@@ -22,18 +17,6 @@ namespace WebShop.Migrations
                 type: "int",
                 nullable: false,
                 defaultValue: 0);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_ShoppingCartId",
-                table: "Products",
-                column: "ShoppingCartId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Products_ShoppingCarts_ShoppingCartId",
-                table: "Products",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCarts",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />

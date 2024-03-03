@@ -15,7 +15,7 @@
             <p class="card-text"><i>@Product.Description.Substring(0, 20) ...</i></p>
             <p class="card-text">In stock: @Product.Quantity</p>
             <div>
-                <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton> @Product.Price SEK
+                <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton>@(Math.Round(Product.Price, 2)) @Currency
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@ else if (Product.Quantity > 0 && Product.IsOnSale == true)
             <p class="card-text"><i>@Product.Description.Substring(0, 20) ...</i></p>
             <p class="card-text">In stock: @Product.Quantity </p>
             <div>
-                <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton> <span class="text-danger">@Product.Price SEK </span>
+                <AddToCartButton OnAddToCart="AddToCart"></AddToCartButton> <span class="text-danger">@(Math.Round(Product.Price, 2)) @Currency </span>
             </div>
         </div>
     </div>
@@ -60,13 +60,21 @@ else
     public Products Product { get; set; } = new();
 
     [Parameter]
+    public double Exhangerate { get; set; }
+
+    [Parameter]
+    public string Currency { get; set; }
+
+    [Parameter]
     public EventCallback OnShowProductSide { get; set; }
 
     [Parameter]
     public EventCallback OnAddToCart { get; set; }
 
+
     public async Task AddToCart()
     {
+        //Something went wrong
         await OnAddToCart.InvokeAsync();
     }
 

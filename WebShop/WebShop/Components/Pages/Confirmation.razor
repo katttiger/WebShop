@@ -2,17 +2,19 @@
 @using WebShop.Common;
 @using WebShop.Data;
 
-@rendermode InteractiveServer
-@inject WebShopHandler wsh
-@inject NavigationManager navigationManager
 
-@inject AuthenticationStateProvider StateProvider;
-@inject UserManager<ApplicationUser> userManager;
+@rendermode InteractiveServer
+@inject HttpClient HttpClient
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider StateProvider
+@inject WebShopHandler wsh
+@inject UserManager<ApplicationUser> userManager
 
 
 <h3>Confirmation</h3>
 <WebshopHeader
 ShoppingListLength="@wsh.ShoppingCart.Count()"></WebshopHeader>
+
 @if (purchaseConfirmed)
 {
     <h2>Thank you for purchasing!</h2>
@@ -36,11 +38,11 @@ else
             <tbody>
                 <tr>
                     <td>@(wsh.applicationUser.ShoppingCart.ShoppingList.IndexOf(product) + 1)</td
-                    <td><img src="@product.Url" width="180px" /></td>
-                    <td>@product.Name</td>
-                    <td>@product.Description</td>
-                    <td>1</td>
-                    <td>@product.Price</td>
+                    <td><img src="@product.Product.Url" width="180px" /></td>
+                    <td>@product..Product.Name</td>
+                    <td>@product.Product.Description</td>
+                    <td>@product.Quantity</td>
+                    <td>@(product.Product.Price*product.Quantity) @wsh.currency</td>
                 </tr>
             </tbody>
         </table>
@@ -55,7 +57,6 @@ else
         
     }
  }
-    
 
 @code {
     public bool purchaseConfirmed = false;
@@ -66,11 +67,11 @@ else
     public async Task ConfirmPurchase()
     {
         purchaseConfirmed = true;
-        wsh.ConfirmPurchase(purchaseConfirmed);
-        await Task.Delay(700);
+        wsh.ConfirmPurchase();
+        await Task.Delay(800);
         navigationManager.NavigateTo("/");
     }
-    
+  
     protected override async Task OnInitializedAsync()
     {
         authenticationState = await StateProvider.GetAuthenticationStateAsync();
