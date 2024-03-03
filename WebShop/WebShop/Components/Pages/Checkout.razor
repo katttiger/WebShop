@@ -22,6 +22,14 @@
     </nav>
 </div>
 
+<p><i>Double-click on the DKK-button to revert to the original price.</i></p>
+<div class="btn-group-sm">
+    <nav>
+        <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
+        <button class="btn btn-success opacity-50" @onclick="()=>ExchangeAsync('U', currentCurrency)">&#36;</button>
+        <button class="btn btn-primary opacity-50" @onclick="()=>ExchangeAsync('D', currentCurrency)">DKK</button>
+    </nav>
+</div>
 @foreach (var product in wsh.ShoppingCart)
 {
     if (product.Product is not null)
@@ -34,7 +42,7 @@
                     <th>Name</th>
                     <th>Description</th>
                     <th>Quantity</th>
-                    <th>Price/item</th>
+                    <th>Price @wsh.currency</th>
                 </tr>
             </thead>
             <tbody>
@@ -44,7 +52,7 @@
                     <td>@product.Product.Name</td>
                     <td>@product.Product.Description</td>
                     <td>@product.Quantity</td>
-                    <td>@(Math.Round((product.Product.Price * product.Quantity), 2)) @wsh.currency</td>
+                    <td>@(Math.Round(product.Product.Price * exchangeRate,2)*product.Product.Quantity) @wsh.currency</td>
                 </tr>
             </tbody>
         </table>
@@ -69,7 +77,88 @@
     public bool purchaseComplete = false;
     ApplicationUser? user;
     AuthenticationState authenticationState;
-    int number = 0;
+
+    public double exchangeRate = 1;
+    public string currency = "DKK";
+    char currentCurrency = 'D';
+
+    public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
+    {
+        HttpClient.DefaultRequestHeaders.Clear();
+        string fromCurrency = string.Empty;
+        string toCurrency = string.Empty;
+
+        //$=>DKK
+        if (toCurrencyInput == 'D' && currentCurrency == 'U')
+        {
+            fromCurrency = "USD";
+            toCurrency = "DKK";
+            currency = "DKK";
+        }
+        //E=>DKK
+        else if (toCurrencyInput == 'D' && currentCurrency == 'E')
+        {
+            fromCurrency = "EUR";
+            toCurrency = "DKK";
+            currency = "DKK";
+        }
+        //DKK=>€
+        else if (toCurrencyInput == 'E' && currentCurrency == 'D')
+        {
+            fromCurrency = "DKK";
+            toCurrency = "EUR";
+            currency = "€";
+        }
+        //$=>€
+        else if (toCurrencyInput == 'E' && currentCurrency == 'U')
+        {
+            fromCurrency = "USD";
+            toCurrency = "EUR";
+            currency = "€";
+        }
+        //€=>$
+        else if (toCurrencyInput == 'U' && currentCurrency == 'E')
+        {
+            fromCurrency = "EUR";
+            toCurrency = "USD";
+            currency = "$";
+        }
+        //DKK=>$
+        else if (toCurrencyInput == 'U' && currentCurrency == 'D')
+        {
+            fromCurrency = "DKK";
+            toCurrency = "USD";
+            currency = "$";
+        }
+        else
+        {
+            if (currentCurrency == 'D')
+            {
+                fromCurrency = "DKK";
+                toCurrency = "DKK";
+                currency = currency;
+            }
+            else if (currentCurrency == 'E')
+            {
+                fromCurrency = "EUR";
+                toCurrency = "EUR";
+                currency = currency;
+            }
+            else
+            {
+                fromCurrency = "USD";
+                toCurrency = "USD";
+                currency = currency;
+            }
+        }
+
+        HttpClient.DefaultRequestHeaders.Clear();
+        HttpClient.DefaultRequestHeaders.Add("X-Api-Key", "oSZAPBiQWuTEFVLaXLzrkQ==SCNxLNPoxMs72JLy");
+        var response = await HttpClient.GetFromJsonAsync<ResponseType>($"https://api.api-ninjas.com/v1/exchangerate?pair={fromCurrency}_{toCurrency}");
+        exchangeRate = response.exchange_rate;
+        HttpClient.DefaultRequestHeaders.Clear();
+    }
+
 
     public bool submited = false;
     public bool error = false;

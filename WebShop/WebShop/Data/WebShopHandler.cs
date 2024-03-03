@@ -41,7 +41,6 @@ namespace WebShop.Data
             }
             return Products;
         }
-
         public void AddToCart(int id, ApplicationUser user)
         {
             Products = GetProductsById(id);
@@ -49,7 +48,6 @@ namespace WebShop.Data
                 user.ShoppingCart = new();
 
             CartItem cartItem = new CartItem(Products, 1, Products.Id);
-
             if (ShoppingCart.Count() > 0)
             {
                 var item = user.ShoppingCart.ShoppingList.Find(p => p.Product.Id == cartItem.Product.Id);
@@ -65,13 +63,6 @@ namespace WebShop.Data
 
             Products.Quantity--;
             ShoppingCart = user.ShoppingCart.ShoppingList;
-            _context.Update(user);
-            _context.SaveChanges();
-        }
-
-        public void RemoveFromCart(ApplicationUser user)
-        {
-            user.ShoppingCart.ShoppingList = new();
             _context.Update(user);
             _context.SaveChanges();
         }

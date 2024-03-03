@@ -26,6 +26,16 @@
     </nav>
 </div>
 
+<p>
+    <b>TIP:</b>
+    <i>
+        Double-click on a currency-button to reset the exchangerate to 1.
+        <br />
+        This will allow you to change the starting currency that is entered into the exchangemethod.
+    </i>
+</p>
+@*Fix this problem*@
+
 <div class="btn-group-sm">
     <nav>
         <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
@@ -38,7 +48,7 @@
     @foreach (var product in wsh.ProductList)
     {
         <ProductHomeCard Product="@product"
-                         Exhangerate="@exchangeRate"
+                         Exhangerate="@(Math.Round(exchangeRate,2))"
                          Currency="@currency"
                          OnShowProductSide="()=>ShowProductSide(product.Id)"
                          OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
@@ -47,9 +57,6 @@
 
 <WebshopFooter></WebshopFooter>
 @code {
-    public double exchangeRate = 1;
-    public string currency = "DKK";
-    char currentCurrency = 'D';
     ApplicationUser? user;
     AuthenticationState authenticationState;
 
@@ -62,6 +69,9 @@
         navigationManager.NavigateTo("/product/" + id);
     }
 
+    public double exchangeRate = 1;
+    public string currency = "DKK";
+    char currentCurrency = 'D';
     public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
     {
         HttpClient.DefaultRequestHeaders.Clear();
@@ -84,7 +94,6 @@
             currency = "DKK";
             currentCurrency = 'D';
         }
-
         //DKK=>€
         else if (toCurrencyInput == 'E' && currentCurrency == 'D')
         {
@@ -101,7 +110,6 @@
             currency = "€";
             currentCurrency = 'E';
         }
-
         //€=>$
         else if (toCurrencyInput == 'U' && currentCurrency == 'E')
         {

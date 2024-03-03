@@ -22,14 +22,25 @@
         </ol>
     </nav>
 </div>
-@*Input conversion here*@
+
+<p>
+    <b>TIP:</b>
+    <i>
+        Double-click on a currency-button to reset the exchangerate to 1.
+        <br />
+        This will allow you to change the starting currency that is entered into the exchangemethod.
+        <br />
+        Note that the starting price is 10 for all currencies.
+    </i>
+</p>
 <div class="btn-group-sm">
     <nav>
         <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
         <button class="btn btn-success opacity-50" @onclick="()=>ExchangeAsync('U', currentCurrency)">&#36;</button>
-        <button class="btn btn-primary opacity-50" @onclick="()=>ExchangeAsync('D', currentCurrency)">DKK;</button>
+        <button class="btn btn-primary opacity-50" @onclick="()=>ExchangeAsync('D', currentCurrency)">DKK</button>
     </nav>
 </div>
+<br />
 
 <ProductInfoCard Product="Product"
                  Exhangerate="@exchangeRate"
@@ -49,6 +60,8 @@
 
     public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
     {
+
+        HttpClient.DefaultRequestHeaders.Clear();
         string fromCurrency = string.Empty;
         string toCurrency = string.Empty;
 
@@ -58,6 +71,7 @@
             fromCurrency = "USD";
             toCurrency = "DKK";
             currency = "DKK";
+            currentCurrency = 'D';
         }
         //E=>DKK
         else if (toCurrencyInput == 'D' && currentCurrency == 'E')
@@ -65,14 +79,15 @@
             fromCurrency = "EUR";
             toCurrency = "DKK";
             currency = "DKK";
+            currentCurrency = 'D';
         }
-
         //DKK=>€
         else if (toCurrencyInput == 'E' && currentCurrency == 'D')
         {
             fromCurrency = "DKK";
             toCurrency = "EUR";
             currency = "€";
+            currentCurrency = 'E';
         }
         //$=>€
         else if (toCurrencyInput == 'E' && currentCurrency == 'U')
@@ -80,14 +95,15 @@
             fromCurrency = "USD";
             toCurrency = "EUR";
             currency = "€";
+            currentCurrency = 'E';
         }
-
         //€=>$
         else if (toCurrencyInput == 'U' && currentCurrency == 'E')
         {
             fromCurrency = "EUR";
             toCurrency = "USD";
             currency = "$";
+            currentCurrency = 'U';
         }
         //DKK=>$
         else if (toCurrencyInput == 'U' && currentCurrency == 'D')
@@ -95,18 +111,36 @@
             fromCurrency = "DKK";
             toCurrency = "USD";
             currency = "$";
+            currentCurrency = 'U';
         }
-
-        HttpClient.DefaultRequestHeaders.Clear();
+        else
+        {
+            if (currentCurrency == 'D')
+            {
+                fromCurrency = "DKK";
+                toCurrency = "DKK";
+                currency = currency;
+            }
+            else if (currentCurrency == 'E')
+            {
+                fromCurrency = "EUR";
+                toCurrency = "EUR";
+                currency = currency;
+            }
+            else
+            {
+                fromCurrency = "USD";
+                toCurrency = "USD";
+                currency = currency;
+            }
+        }
         HttpClient.DefaultRequestHeaders.Add("X-Api-Key", "oSZAPBiQWuTEFVLaXLzrkQ==SCNxLNPoxMs72JLy");
         var response = await HttpClient.GetFromJsonAsync<ResponseType>($"https://api.api-ninjas.com/v1/exchangerate?pair={fromCurrency}_{toCurrency}");
         exchangeRate = response.exchange_rate;
-
-        foreach (var product in wsh.ProductList)
-        {
-            product.Price = product.Price * exchangeRate;
-        }
+        wsh.currency = currency;
+        HttpClient.DefaultRequestHeaders.Clear();
     }
+
 
     bool error = false;
     public string errorMessage = string.Empty;
