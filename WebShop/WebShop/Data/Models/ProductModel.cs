@@ -1,6 +1,4 @@
-﻿using Common.Interface;
-using System.ComponentModel.DataAnnotations.Schema;
-using WebShop.Common.Classes;
+﻿using WebShop.Common.Classes;
 
 namespace WebShop.Data.Models
 {

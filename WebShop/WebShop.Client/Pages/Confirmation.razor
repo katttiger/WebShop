@@ -1,30 +1,17 @@
 ﻿@page "/confirmation"
-@using WebShop.Data;
+@using System.Security.Claims;
+@using WebShop.Client.ClientModels;
 
-@rendermode InteractiveServer
+@rendermode InteractiveWebAssembly
+
 @inject HttpClient HttpClient
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider StateProvider
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 <h3>Confirmation</h3>
-@* <WebshopHeader
-ShoppingListLength="@wsh.ShoppingCart.Count()"></WebshopHeader>
-
-@if (purchaseConfirmed)
-{
-    <h2>Thank you for purchasing!</h2>
-}
-else
-{
-<p><i>Double-click on the DKK-button to revert to the original price.</i></p>
-<div class="btn-group-sm">
-    <nav>
-        <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
-        <button class="btn btn-success opacity-50" @onclick="()=>ExchangeAsync('U', currentCurrency)">&#36;</button>
-        <button class="btn btn-primary opacity-50" @onclick="()=>ExchangeAsync('D', currentCurrency)">DKK</button>
-    </nav>
-</div> *@
-@*     @foreach (var product in ShoppingCart)
+<div>
+    @foreach (var product in ShoppingList)
     {
         <table class="table">
             <thead>
@@ -40,127 +27,44 @@ else
 
             <tbody>
                 <tr>
-                     <td>@(wsh.applicationUser.ShoppingCart.ShoppingList.IndexOf(product) + 1)</td 
-                    <td><img src="@product.Product.Url" width="180px" /></td>
-                    <td>@product..Product.Name</td>
-                    <td>@product.Product.Description</td>
+                    <td>@(ShoppingList.IndexOf(product) + 1)</td
+                    <td><img src="@product.Products.Url" width="180px" /></td>
+                    <td>@product.Products.Name</td>
+                    <td>@product.Products.Description</td>
                     <td>@product.Quantity</td>
-                    <td>@((product.Product.Price*exchangeRate) *product.Quantity) @wsh.currency</td>
+                    <td>@(product.Products.Price*product.Quantity)</td>
                 </tr>
             </tbody>
         </table>
     }
- *@    @* @if(user is not null)
-    {
-    <form class="form-control">
-        <input class="form-control" type="text" placeholder="Name" disabled @bind="user.UserName"/>
-        <input class="form-control" type="text" placeholder="Adress"  disabled @bind="user.Email" />
-    </form>
-    <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
-         *@
-    }
- }
+ </div>
+ <button>Hello!</button>
 
 @code {
-    public bool purchaseConfirmed = false;
 
     AuthenticationState authenticationState;
+    List<ClientCartItems> ShoppingList;
 
-        public double exchangeRate = 1;
-    public string currency = "DKK";
-    char currentCurrency = 'D';
-    // public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
-    // {
-    //     HttpClient.DefaultRequestHeaders.Clear();
-    //     string fromCurrency = string.Empty;
-    //     string toCurrency = string.Empty;
-
-    //     //$=>DKK
-    //     if (toCurrencyInput == 'D' && currentCurrency == 'U')
-    //     {
-    //         fromCurrency = "USD";
-    //         toCurrency = "DKK";
-    //         currency = "DKK";
-    //         currentCurrency = 'D';
-    //     }
-    //     //E=>DKK
-    //     else if (toCurrencyInput == 'D' && currentCurrency == 'E')
-    //     {
-    //         fromCurrency = "EUR";
-    //         toCurrency = "DKK";
-    //         currency = "DKK";
-    //         currentCurrency = 'D';
-    //     }
-    //     //DKK=>€
-    //     else if (toCurrencyInput == 'E' && currentCurrency == 'D')
-    //     {
-    //         fromCurrency = "DKK";
-    //         toCurrency = "EUR";
-    //         currency = "€";
-    //         currentCurrency = 'E';
-    //     }
-    //     //$=>€
-    //     else if (toCurrencyInput == 'E' && currentCurrency == 'U')
-    //     {
-    //         fromCurrency = "USD";
-    //         toCurrency = "EUR";
-    //         currency = "€";
-    //         currentCurrency = 'E';
-    //     }
-    //     //€=>$
-    //     else if (toCurrencyInput == 'U' && currentCurrency == 'E')
-    //     {
-    //         fromCurrency = "EUR";
-    //         toCurrency = "USD";
-    //         currency = "$";
-    //         currentCurrency = 'U';
-    //     }
-    //     //DKK=>$
-    //     else if (toCurrencyInput == 'U' && currentCurrency == 'D')
-    //     {
-    //         fromCurrency = "DKK";
-    //         toCurrency = "USD";
-    //         currency = "$";
-    //         currentCurrency = 'U';
-    //     }
-    //     else
-    //     {
-    //         if (currentCurrency == 'D')
-    //         {
-    //             fromCurrency = "DKK";
-    //             toCurrency = "DKK";
-    //             currency = currency;
-    //         }
-    //         else if (currentCurrency == 'E')
-    //         {
-    //             fromCurrency = "EUR";
-    //             toCurrency = "EUR";
-    //             currency = currency;
-    //         }
-    //         else
-    //         {
-    //             fromCurrency = "USD";
-    //             toCurrency = "USD";
-    //             currency = currency;
-    //         }
-    //     }
-    //     HttpClient.DefaultRequestHeaders.Add("X-Api-Key", "oSZAPBiQWuTEFVLaXLzrkQ==SCNxLNPoxMs72JLy");
-    //     var response = await HttpClient.GetFromJsonAsync<ResponseType>($"https://api.api-ninjas.com/v1/exchangerate?pair={fromCurrency}_{toCurrency}");
-    //     exchangeRate = response.exchange_rate;
-    //     wsh.currency = currency;
-    //     HttpClient.DefaultRequestHeaders.Clear();
-    // }
-
-    public async Task ConfirmPurchase()
-    {
-        purchaseConfirmed = true;
-       // wsh.ConfirmPurchase();
-        await Task.Delay(800);
-        navigationManager.NavigateTo("/");
-    }
-  
+    //List<ClientCartItem> ShoppingList = new();'
     protected override async Task OnInitializedAsync()
     {
+        OnAfterRenderAsync(true);
     }
-    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            authenticationState = await StateProvider.GetAuthenticationStateAsync();
+            var userId = authenticationState
+            .User
+            .Claims
+            .Where(c => c.Type == ClaimTypes.NameIdentifier)
+            .First()
+            .Value;
+
+            ShoppingList = await sessionStorage.GetItemAsync<List<ClientCartItems>>(userId);
+
+            StateHasChanged();
+        }
+    }
 }

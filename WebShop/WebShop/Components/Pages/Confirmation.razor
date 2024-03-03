@@ -1,4 +1,4 @@
-﻿@page "/confirmation"
+﻿@page "/oldconfirmation"
 @using WebShop.Common;
 @using WebShop.Data;
 
@@ -60,7 +60,6 @@ else
         <input class="form-control" type="text" placeholder="Adress"  disabled @bind="user.Email" />
     </form>
     <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
-        
     }
  }
 
@@ -70,7 +69,7 @@ else
     ApplicationUser? user;
     AuthenticationState authenticationState;
 
-        public double exchangeRate = 1;
+    public double exchangeRate = 1;
     public string currency = "DKK";
     char currentCurrency = 'D';
     public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
@@ -78,7 +77,6 @@ else
         HttpClient.DefaultRequestHeaders.Clear();
         string fromCurrency = string.Empty;
         string toCurrency = string.Empty;
-
         //$=>DKK
         if (toCurrencyInput == 'D' && currentCurrency == 'U')
         {
@@ -155,7 +153,6 @@ else
         HttpClient.DefaultRequestHeaders.Clear();
     }
 
-
     public async Task ConfirmPurchase()
     {
         purchaseConfirmed = true;
@@ -171,9 +168,7 @@ else
         if (stateUser is not null)
             user = await wsh.GetUserShopinglistInfo(stateUser);
         else
-        {
-             navigationManager.NavigateTo("/");
-        }
+            navigationManager.NavigateTo("/");        
         StateHasChanged();
     }
     

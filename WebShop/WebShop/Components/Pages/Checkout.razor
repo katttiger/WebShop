@@ -1,12 +1,14 @@
 ﻿@page "/checkout"
 @using WebShop.Common;
 @using WebShop.Data;
+@using WebShop.Client.ClientModels;
 
 @inject WebShopHandler wsh;
 @inject NavigationManager navigationManager
 @inject HttpClient HttpClient
 @inject AuthenticationStateProvider StateProvider;
 @inject UserManager<ApplicationUser> userManager;
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 @rendermode InteractiveServer
 
@@ -52,7 +54,7 @@
                     <td>@product.Product.Name</td>
                     <td>@product.Product.Description</td>
                     <td>@product.Quantity</td>
-                    <td>@(Math.Round(product.Product.Price * exchangeRate,2)*product.Product.Quantity) @wsh.currency</td>
+                    <td>@(Math.Round(product.Product.Price * exchangeRate, 2) * product.Quantity) @wsh.currency</td>
                 </tr>
             </tbody>
         </table>
@@ -74,10 +76,10 @@
 }
 
 @code {
-    public bool purchaseComplete = false;
     ApplicationUser? user;
     AuthenticationState authenticationState;
 
+    #region
     public double exchangeRate = 1;
     public string currency = "DKK";
     char currentCurrency = 'D';
@@ -158,14 +160,28 @@
         exchangeRate = response.exchange_rate;
         HttpClient.DefaultRequestHeaders.Clear();
     }
+    #endregion
 
+    public async void NavigateToConfirmation()
+    {
+        foreach (var item in user.ShoppingCart.ShoppingList)
+        {
+            item.Product.Price = item.Product.Price * exchangeRate;
+        }
 
-    public bool submited = false;
-    public bool error = false;
+        List<ClientCartItems> clientCartItems =
+        user.ShoppingCart.ShoppingList.Select(
+            i => new ClientCartItems
+                {
+                    Products = i.Product,
+                    ProductId = i.Product.Id,
+                    Quantity = i.Quantity
+                }
+        ).ToList();
 
-    public int IncremeantCount(int number) => number++;
-
-    public void NavigateToConfirmation() => navigationManager.NavigateTo("/confirmation");
+        await sessionStorage.SetItemAsync(user.Id, clientCartItems);
+        navigationManager.NavigateTo("/confirmation");
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -175,7 +191,6 @@
             user = await wsh.GetUserShopinglistInfo(stateUser);
         else
             navigationManager.NavigateTo("/");
-
         StateHasChanged();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -185,13 +200,9 @@
             authenticationState = await StateProvider.GetAuthenticationStateAsync();
             var stateUser = await userManager.GetUserAsync(authenticationState.User);
             if (stateUser is not null)
-            {
                 user = await wsh.GetUserShopinglistInfo(stateUser);
-            }
             else
-            {
                 navigationManager.NavigateTo("/");
-            }
         }
         StateHasChanged();
     }
