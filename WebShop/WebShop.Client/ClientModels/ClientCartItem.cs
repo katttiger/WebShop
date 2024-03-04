@@ -2,8 +2,14 @@
 {
     public class ClientCartItems
     {
-        public ClientProducts Products { get; set; }
         public int ProductId { get; set; }
-        public int Quantity { get; set; } = 1;
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public double Price { get; set; }
+        public int QuantityBought { get; set; }
+        public string Url { get; set; }
+
+        public string UserName { get; set; }
+        public string Email { get; set; }
     }
 }

@@ -8,8 +8,15 @@
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider StateProvider
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager navigaitonManager
 
 <h3>Confirmation</h3>
+@if (purchaseConfirmed)
+{
+    <h2>Thank you for purchasing!</h2>
+}
+else
+{
 <div>
     @foreach (var product in ShoppingList)
     {
@@ -28,28 +35,38 @@
             <tbody>
                 <tr>
                     <td>@(ShoppingList.IndexOf(product) + 1)</td
-                    <td><img src="@product.Products.Url" width="180px" /></td>
-                    <td>@product.Products.Name</td>
-                    <td>@product.Products.Description</td>
-                    <td>@product.Quantity</td>
-                    <td>@(product.Products.Price*product.Quantity)</td>
+                    <td><img src="@product.Url" width="180px" /></td>
+                    <td>@product.Name</td>
+                    <td>@product.Description</td>
+                    <td>@product.QuantityBought</td>
+                    <td>@(product.Price*product.QuantityBought)</td>
                 </tr>
             </tbody>
         </table>
     }
  </div>
- <button>Hello!</button>
+ <form class="form-control">
+        <input class="form-control" type="text" placeholder="Name" disabled @bind="userName" />
+        <input class="form-control" type="text" placeholder="Email"  disabled @bind="email"/>
+    </form>
+    <input type="submit" @onclick="OnConfirmation" value="Submit" />
+    
+}
 
 @code {
-
     AuthenticationState authenticationState;
-    List<ClientCartItems> ShoppingList;
+    List<ClientCartItems> ShoppingList=new();
+    bool purchaseConfirmed = false;
+    string userName = string.Empty;
+    string email = string.Empty;
 
-    //List<ClientCartItem> ShoppingList = new();'
-    protected override async Task OnInitializedAsync()
+    public async void OnConfirmation()
     {
-        OnAfterRenderAsync(true);
+        purchaseConfirmed = true;
+        // await Task.Delay(700);
+        navigationManager.NavigateTo("/oldconfirmation");
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -63,8 +80,12 @@
             .Value;
 
             ShoppingList = await sessionStorage.GetItemAsync<List<ClientCartItems>>(userId);
+            var item = ShoppingList[0];
+            userName = item.UserName;
+            email = item.Email;
 
-            StateHasChanged();
+            if(ShoppingList is not null)
+                StateHasChanged();
         }
     }
 }

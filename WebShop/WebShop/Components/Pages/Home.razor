@@ -26,16 +26,15 @@
     </nav>
 </div>
 
+@*Fix the exchangerate to that it works properly*@
 <p>
     <b>TIP:</b>
     <i>
-        Double-click on a currency-button to reset the exchangerate to 1.
-        <br />
-        This will allow you to change the starting currency that is entered into the exchangemethod.
+        Double-click on the DKK-button to show the original price.
     </i>
 </p>
-@*Fix this problem*@
 
+@*Note: can be turned into a component*@
 <div class="btn-group-sm">
     <nav>
         <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
@@ -48,13 +47,12 @@
     @foreach (var product in wsh.ProductList)
     {
         <ProductHomeCard Product="@product"
-                         Exhangerate="@(Math.Round(exchangeRate,2))"
+                         Exchangerate="Math.Round(exchangeRate,2)"
                          Currency="@currency"
                          OnShowProductSide="()=>ShowProductSide(product.Id)"
                          OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
     }
 </div>
-
 <WebshopFooter></WebshopFooter>
 @code {
     ApplicationUser? user;
@@ -72,6 +70,7 @@
     public double exchangeRate = 1;
     public string currency = "DKK";
     char currentCurrency = 'D';
+
     public async Task ExchangeAsync(char toCurrencyInput, char fromCurrencyInput)
     {
         HttpClient.DefaultRequestHeaders.Clear();

@@ -24,7 +24,7 @@
     </nav>
 </div>
 
-<p><i>Double-click on the DKK-button to revert to the original price.</i></p>
+
 <div class="btn-group-sm">
     <nav>
         <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
@@ -60,7 +60,6 @@
         </table>
     }
 }
-
 
 @if (user is not null)
 {
@@ -165,18 +164,18 @@
 
     public async void NavigateToConfirmation()
     {
-        foreach (var item in user.ShoppingCart.ShoppingList)
-        {
-            item.Product.Price = item.Product.Price * exchangeRate;
-        }
-
         List<ClientCartItems> clientCartItems =
         user.ShoppingCart.ShoppingList.Select(
             i => new ClientCartItems
                 {
-                    Products = i.Product,
                     ProductId = i.Product.Id,
-                    Quantity = i.Quantity
+                    Name = i.Product.Name,
+                    Description = i.Product.Description,
+                    Price = Math.Round(i.Product.Price * exchangeRate, 2),
+                    QuantityBought = i.Quantity,
+                    Url = i.Product.Url,
+                    UserName = user.UserName,
+                    Email = user.Email
                 }
         ).ToList();
 

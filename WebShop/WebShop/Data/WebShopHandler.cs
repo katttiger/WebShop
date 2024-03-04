@@ -13,16 +13,10 @@ namespace WebShop.Data
         public Products Products;
         public ApplicationUser applicationUser;
         public CartItem ShoppingCartItem;
-
         public List<CartItem> ShoppingCart = new();
         public List<Products> ProductList = new();
-        public NavigationManager navigationManager { get; set; }
-
         public string currency = string.Empty;
-
-        public bool error = false;
-        public string errorMessage = string.Empty;
-
+        public NavigationManager navigationManager { get; set; }
 
         private readonly ApplicationDbContext _context;
         public WebShopHandler(ApplicationDbContext context) => _context = context;
@@ -69,6 +63,10 @@ namespace WebShop.Data
 
         public void ConfirmPurchase()
         {
+            foreach (var item in applicationUser.ShoppingCart.ShoppingList)
+            {
+                _context.CartItems.Remove(item);
+            }
             ShoppingCart.Clear();
             applicationUser.ShoppingCart.ShoppingList = ShoppingCart;
             _context.SaveChanges();
@@ -160,12 +158,8 @@ namespace WebShop.Data
                 .First(u => u.Id == user.Id);
             foreach (var item in foundUser.ShoppingCart.ShoppingList)
             {
-                //IF any product is null
                 if (item.Product == null)
                 {
-                    //THEN go somewhere and fetch the item that has the same productId
-                    //as the item you are comparing to.
-
                     ProductList = _context.Products.ToList();
                     var product = ProductList.Find(i => i.Id == item.ProductId);
                     if (product is not null)

@@ -26,11 +26,7 @@
 <p>
     <b>TIP:</b>
     <i>
-        Double-click on a currency-button to reset the exchangerate to 1.
-        <br />
-        This will allow you to change the starting currency that is entered into the exchangemethod.
-        <br />
-        Note that the starting price is 10 for all currencies.
+        Double-click on the DKK-button to show the original price.
     </i>
 </p>
 <div class="btn-group-sm">
@@ -43,7 +39,7 @@
 <br />
 
 <ProductInfoCard Product="Product"
-                 Exhangerate="@exchangeRate"
+                 Exhangerate="Math.Round(exchangeRate,2)"
                  Currency="@currency"
                  OnAddToCart="()=>AddToCart(Product.Id)"></ProductInfoCard>
 <WebshopFooter></WebshopFooter>

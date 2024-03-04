@@ -9,62 +9,15 @@
 @inject WebShopHandler wsh
 @inject UserManager<ApplicationUser> userManager
 
-<h3>Confirmation</h3>
-<WebshopHeader
-ShoppingListLength="@wsh.ShoppingCart.Count()"></WebshopHeader>
+<WebshopHeader ShoppingListLength="@wsh.ShoppingCart.Count()"></WebshopHeader>
 
 @if (purchaseConfirmed)
 {
     <h2>Thank you for purchasing!</h2>
 }
-else
-{
-<p><i>Double-click on the DKK-button to revert to the original price.</i></p>
-<div class="btn-group-sm">
-    <nav>
-        <button class="btn btn-warning opacity-50" @onclick="()=>ExchangeAsync('E',currentCurrency)">&#8364;</button>
-        <button class="btn btn-success opacity-50" @onclick="()=>ExchangeAsync('U', currentCurrency)">&#36;</button>
-        <button class="btn btn-primary opacity-50" @onclick="()=>ExchangeAsync('D', currentCurrency)">DKK</button>
-    </nav>
-</div>
-    @foreach (var product in wsh.ShoppingCart)
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                  <th>#</th>
-                <th>Picture</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Price/item</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr>
-                    <td>@(wsh.applicationUser.ShoppingCart.ShoppingList.IndexOf(product) + 1)</td
-                    <td><img src="@product.Product.Url" width="180px" /></td>
-                    <td>@product..Product.Name</td>
-                    <td>@product.Product.Description</td>
-                    <td>@product.Quantity</td>
-                    <td>@((product.Product.Price*exchangeRate) *product.Quantity) @wsh.currency</td>
-                </tr>
-            </tbody>
-        </table>
-    }
-    @if(user is not null)
-    {
-    <form class="form-control">
-        <input class="form-control" type="text" placeholder="Name" disabled @bind="user.UserName"/>
-        <input class="form-control" type="text" placeholder="Adress"  disabled @bind="user.Email" />
-    </form>
-    <input type="submit" @onclick="ConfirmPurchase" value="Submit" />
-    }
- }
 
 @code {
-    public bool purchaseConfirmed = false;
+    public bool purchaseConfirmed = true;
 
     ApplicationUser? user;
     AuthenticationState authenticationState;
@@ -155,12 +108,11 @@ else
 
     public async Task ConfirmPurchase()
     {
-        purchaseConfirmed = true;
         wsh.ConfirmPurchase();
         await Task.Delay(800);
         navigationManager.NavigateTo("/");
     }
-  
+
     protected override async Task OnInitializedAsync()
     {
         authenticationState = await StateProvider.GetAuthenticationStateAsync();
@@ -168,8 +120,9 @@ else
         if (stateUser is not null)
             user = await wsh.GetUserShopinglistInfo(stateUser);
         else
-            navigationManager.NavigateTo("/");        
+            navigationManager.NavigateTo("/");
+        await ConfirmPurchase();
         StateHasChanged();
     }
-    
+
 }
