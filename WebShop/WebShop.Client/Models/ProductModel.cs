@@ -1,15 +1,13 @@
-namespace WebShop.Client.ClientModels
+﻿namespace WebShop.Data.Models
 {
-    public class ClientProducts
+    public class Products
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public double Price { get; set; } = 10;
+        public double Price { get; set; }
         public int Quantity { get; set; }
         public bool IsOnSale { get; set; }
         public string Url { get; set; }
-
-        public ClientCartItems ClientItem { get;set; }  
     }
 }
