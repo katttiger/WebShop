@@ -53,7 +53,9 @@
                          OnAddToCart="()=>AddToCart(product.Id)"></ProductHomeCard>
     }
 </div>
-<WebshopFooter></WebshopFooter>
+<footer>
+    <WebshopFooter></WebshopFooter>
+</footer>
 @code {
     ApplicationUser? user;
     AuthenticationState authenticationState;
@@ -156,11 +158,6 @@
     protected override async Task OnInitializedAsync()
     {
         wsh.ProductList = wsh.GetAllProducts();
-        if (wsh.ProductList.Count() < 5)
-        {
-            await wsh.Seed();
-        }
-        wsh.ProductList = wsh.GetAllProducts();
         authenticationState = await StateProvider.GetAuthenticationStateAsync();
         var stateUser = await userManager.GetUserAsync(authenticationState.User);
         if (stateUser is not null)
@@ -169,6 +166,11 @@
     }
     public async Task UpdateUser()
     {
+        wsh.ProductList = wsh.GetAllProducts();
+        if (wsh.ProductList.Count() < 5)
+        {
+            await wsh.Seed();
+        }
         wsh.applicationUser = user;
         await wsh.UpdateUser(user);
     }
@@ -181,6 +183,7 @@
             var stateUser = await userManager.GetUserAsync(authenticationState.User);
             if (stateUser is not null)
                 user = await wsh.GetUserShopinglistInfo(stateUser);
+
             StateHasChanged();
         }
         StateHasChanged();
